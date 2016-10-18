@@ -11,7 +11,7 @@ import (
 
 type Context struct {
 	CurrentUser *models.User
-	Vars        map[string]string
+	Vars        map[string]interface{}
 }
 
 func (c *Context) Unauthenticated() bool {
@@ -41,7 +41,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.Vars = mux.Vars(r)
 
 	token := ""
-	_ := json.Unmarshal(Srv.Cache.Get(token), c.CurrentUser)
+	token, _ := json.Unmarshal(Srv.Cache.Get(token), c.CurrentUser)
 
 	// Commented out for now to make development less of a headache.
 	// 	if c.CurrentUser == nil && h.reqUser {
