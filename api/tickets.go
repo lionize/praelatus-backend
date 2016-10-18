@@ -10,13 +10,14 @@ import (
 // TODO: Fix error handling
 
 // ListTickets will list all tickets in the database
-func (gc *GlobalContext) ListTickets(c echo.Context) error {
+func ListTickets(c *Context) error {
 	var tickets []models.Ticket
-	gc.db.Find(&tickets)
-	if err := gc.CheckDbError(); err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
 
+	tickets := store.Tickets().GetAll()
+	jsn, err := json.Marshal(tickets)
+	if err != nil {
+		return (http.StatusInternalServerError)
+	}
 	return c.JSON(http.StatusOK, tickets)
 }
 
