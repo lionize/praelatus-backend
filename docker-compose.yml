@@ -5,9 +5,9 @@ services:
         env_file: ./envfile
     redis:
         image: redis
-    tessera:
+    praelatus:
         build: .
-        command: tessera
+        command: praelatus
         ports:
             - "8080:8080"
         depends_on:

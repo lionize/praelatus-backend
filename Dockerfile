@@ -1,5 +1,5 @@
-FROM golang:1.6
+FROM golang:1.7
 
-RUN go get github.com/chasinglogic/tessera
+RUN go get github.com/praelatus/backend
 
-ENTRYPOINT /go/bin/tessera
+ENTRYPOINT /go/bin/praelatus-server
