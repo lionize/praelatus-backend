@@ -3,13 +3,13 @@ package store
 import "github.com/praelatus/backend/models"
 
 type Store interface {
-	Users() UserStore
-	Projects() ProjectStore
-	Tickets() TicketStore
+    Users()      UserStore
+    Projects()   ProjectStore
+    Tickets()    TicketStore
 }
 
 type Cache interface {
-	Get(id string) interface{}
+	Get(key string) interface{}
 	Set(interface{}) error
 }
 
