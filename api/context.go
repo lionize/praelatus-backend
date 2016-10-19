@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chasinglogic/tessera/models"
+	"github.com/praelatus/backend/models"
 	"github.com/gorilla/mux"
 )
 
@@ -24,8 +24,16 @@ func (c *Context) Unauthenticated() bool {
 
 type AppHandler func(*Context) (int, []byte)
 
-func Authentication(fn AppHandler, userRequired, adminRequired bool) http.Handler {
-	return &h{fn, userRequired, adminRequired}
+func AdminRequired(fn AppHandler) http.Handler {
+	return &handler{fn, true, true}
+}
+
+func AuthRequired(fn AppHandler) http.Handler {
+    return &handler{fn, true, false}
+}
+
+func NoAuth(fn AppHandler) http.Handler {
+    return &handler{fn, false, false}
 }
 
 type handler struct {
