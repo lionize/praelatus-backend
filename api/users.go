@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/chasinglogic/tessera/models"
+	"github.com/praelatus/backend/models"
 	"github.com/labstack/echo"
 )
 
