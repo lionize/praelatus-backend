@@ -1,6 +1,6 @@
 package store
 
-import "github.com/chasinglogic/tessera/models"
+import "github.com/praelatus/backend/models"
 
 type sqlProjectStore struct{}
 

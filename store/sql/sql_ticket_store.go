@@ -1,7 +1,7 @@
 package store
 
 import (
-	"github.com/chasinglogic/tessera/models"
+	"github.com/praelatus/backend/models"
 	"github.com/jinzhu/gorm"
 )
 

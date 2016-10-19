@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/Sirupsen/logrus"
-	"github.com/chasinglogic/tessera/store"
+	"github.com/praelatus/backend/store"
 	"github.com/gorilla/mux"
 )
 

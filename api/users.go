@@ -9,8 +9,8 @@ import (
 )
 
 func InitUserRoutes() {
-	BaseRoutes.Users.Handle("/", Authentication(ListUsers, true, true)).Methods("GET")
-	BaseRoutes.Users.Handle("/create", Authentication(CreateUser, true, true)).Methods("POST")
+	BaseRoutes.Users.Handle("/", AdminRequired(ListUsers, true, true)).Methods("GET")
+	BaseRoutes.Users.Handle("/create", (CreateUser, true, true)).Methods("POST")
 	BaseRoutes.Users.Handle("/{name}", Authentication(GetUser, true, true)).Methods("GET")
 	BaseRoutes.Users.Handle("/{name}", Authentication(UpdateUser, true, true)).Methods("POST", "PUT")
 }

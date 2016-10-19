@@ -3,9 +3,13 @@ package api
 import (
 	"net/http"
 
-	"github.com/chasinglogic/tessera/models"
+	"github.com/praelatus/backend/models"
 	"github.com/labstack/echo"
 )
+
+func InitTicketRoutes() {
+
+}
 
 // TODO: Fix error handling
 

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chasinglogic/tessera/models"
-	"github.com/chasinglogic/tessera/utils"
+	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/utils"
 )
 
 func checkError(err error) {

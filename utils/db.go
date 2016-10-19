@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/chasinglogic/tessera/models"
+	"github.com/praelatus/backend/models"
 	"github.com/jinzhu/gorm"
 
 	// Driver for the gorm connection
@@ -14,7 +14,7 @@ import (
 func InitDB(connectionString string) (*gorm.DB, error) {
 	// Default if the env variable is not set
 	if connectionString == "" {
-		connectionString = "host=localhost port=5432 user=postgres password=tessera dbname=tessera_dev sslmode=disable"
+		connectionString = "host=localhost port=5432 user=postgres password=praelatus dbname=praelatus_dev sslmode=disable"
 	}
 
 	db, err := gorm.Open("postgres", connectionString)
