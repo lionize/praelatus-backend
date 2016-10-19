@@ -13,7 +13,7 @@ const (
 
 // Project is the model used to represent a project in Tessera
 type Project struct {
-	ID         uint         `json:"id" gorm:"primary_key"`
+	ID         uint         `json:"id"`
 	CreatedAt  time.Time    `json:"createdAt"`
 	UpdatedAt  time.Time    `json:"updatedAt"`
 	Name       string       `json:"name"`
