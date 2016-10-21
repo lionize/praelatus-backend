@@ -2,7 +2,7 @@ package models
 
 // Comment is a comment on an issue / ticket.
 type Comment struct {
-	Base
+	ID       uint
 	Body     string `json:"body"`
 	TicketID uint   `json:"-"`
 }
