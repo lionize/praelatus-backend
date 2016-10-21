@@ -1,9 +1,10 @@
 package store
 
-import "github.com/jinzhu/gorm"
+import "github.com/jmoiron/sqlx"
 
 type SqlStore struct {
-	db       *gorm.DB
+	db       *sqlx.DB
+	replicas *[]sqlx.DB
 	users    *sqlUserStore
 	projects *sqlProjectStore
 	tickets  *sqlTicketStore
