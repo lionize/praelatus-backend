@@ -5,21 +5,27 @@ import (
 	"github.com/praelatus/backend/store"
 )
 
-var Srv *ApiServer
-
-// ApiServer holds items which need to be globally accessible.
-// such as DB connections and loggers.
-type ApiServer struct {
-	Store  store.Store
-	Cache  store.Cache
-	Routes *mux.Router
+type Routes struct {
+	Root     *mux.Router
+	Users    *mux.Router
+	Projects *mux.Router
+	Tickets  *mux.Router
 }
 
-func New() {
-	Srv = &ApiServer{}
-	Srv.Store = store.NewSqlStore()
-	Srv.Cache = store.NewRedisCache()
-	Srv.Router = mux.NewRouter()
+var BaseRoutes *Routes
+var Store *store.Store
+var Cache *store.Cache
 
-	BuildRoutes()
+func BuildRoutes() {
+	Store = postgres.NewStore(os.getenv("PRAELATUS_DB"))
+
+	BaseRoutes = &Routes{}
+	BaseRoutes.Root = mux.NewRouter()
+	BaseRoutes.Users = BaseRoutes.Root.PathPrefix("/users").Subrouter()
+	BaseRoutes.Projects = BaseRoutes.Root.PathPrefix("/projects").Subrouter()
+	BaseRoutes.Tickets = BaseRoutes.Root.PathPrefix("/tickets").Subrouter()
+
+	InitUserRoutes()
+	InitProjectRoutes()
+	InitTicketRoutes()
 }
