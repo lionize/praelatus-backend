@@ -1,12 +1,10 @@
 package api
 
 import (
-	"github.com/Sirupsen/logrus"
-	"github.com/praelatus/backend/store"
 	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/store"
 )
 
-var Log *logrus.Logger
 var Srv *ApiServer
 
 // ApiServer holds items which need to be globally accessible.
@@ -17,13 +15,11 @@ type ApiServer struct {
 	Routes *mux.Router
 }
 
-func New(log *logrus.Logger) {
+func New() {
 	Srv = &ApiServer{}
 	Srv.Store = store.NewSqlStore()
 	Srv.Cache = store.NewRedisCache()
 	Srv.Router = mux.NewRouter()
 
 	BuildRoutes()
-
-	Log = log
 }
