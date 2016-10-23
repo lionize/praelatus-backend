@@ -1,10 +1,12 @@
 CREATE TABLE IF NOT EXISTS users (
-    id        SERIAL PRIMARY KEY,
-    username  varchar(40) UNIQUE NOT NULL,
-    password  varchar(250) NOT NULL,
-    email     varchar(250) NOT NULL,
-    full_name varchar(250) NOT NULL,
-    is_admin  boolean DEFAULT false
+    id              SERIAL PRIMARY KEY,
+    username        varchar(40) UNIQUE NOT NULL,
+    password        varchar(250) NOT NULL,
+    email           varchar(250) NOT NULL,
+    full_name       varchar(250) NOT NULL,
+    is_admin        boolean DEFAULT false,
+    gravatar        varchar(250),
+    profile_picture varchar(250)
 );
 
 CREATE TABLE IF NOT EXISTS teams (
@@ -12,6 +14,8 @@ CREATE TABLE IF NOT EXISTS teams (
     name         varchar(40) NOT NULL,
     url_slug     varchar(80) NOT NULL,
     homepage     varchar(250),
+    icon_path    varchar(250),
+
     team_lead_id integer REFERENCES users (id)
 );
 
@@ -21,6 +25,7 @@ CREATE TABLE IF NOT EXISTS projects (
     project_key     varchar(40) NOT NULL,
     git_repo        varchar(250),
     homepage        varchar(250),
+    icon_path       varchar(250),
 
     project_lead_id integer REFERENCES users (id),
     team_id         integer REFERENCES teams (id)
@@ -39,11 +44,15 @@ CREATE TABLE IF NOT EXISTS workflows (
 );
 
 CREATE TABLE IF NOT EXISTS workflow_transitions (
-    id             SERIAL PRIMARY KEY,
+    id          SERIAL PRIMARY KEY,
 
-    workflow_id    integer REFERENCES workflows (id),
-    from_status_id integer REFERENCES statuses (id),
-    to_status_id   integer REFERENCES statuses (id)
+    workflow_id integer REFERENCES workflows (id),
+    status_id   integer REFERENCES statuses (id)
+);
+
+CREATE TABLE transitions_to_statuses (
+    transition_id integer,
+    status_id     integer
 );
 
 CREATE TYPE method AS ENUM('EMAIL', 'POST', 'PUT', 'GET', 'DELETE');
@@ -53,7 +62,7 @@ CREATE TABLE IF NOT EXISTS hooks (
     delivery      method,
 
     transition_id integer REFERENCES workflow_transitions
-)
+);
 
 CREATE TYPE data_types AS ENUM ('FLOAT', 'STRING', 'INT', 'DATE');
 CREATE TABLE IF NOT EXISTS fields (
@@ -62,7 +71,11 @@ CREATE TABLE IF NOT EXISTS fields (
     data_type data_types
 );
 
--- TODO: Create ticket_types table
+CREATE TABLE IF NOT EXISTS ticket_types (
+    id        SERIAL PRIMARY KEY,
+    name      varchar(250),
+    icon_path varchar(250)
+);
 
 CREATE TABLE IF NOT EXISTS tickets (
     id          SERIAL PRIMARY KEY,
@@ -86,7 +99,10 @@ CREATE TABLE IF NOT EXISTS field_values (
 );
 CREATE INDEX idxfv ON field_values (value);
 
--- TODO: finish this table
 CREATE TABLE IF NOT EXISTS field_tickettype_project (
+    id             SERIAL PRIMARY KEY,
 
+    field_id       integer REFERENCES fields (id),
+    ticket_type_id integer REFERENCES ticket_types (id),
+    project_id     integer REFERENCES projects (id),
 );
