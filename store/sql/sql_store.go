@@ -1,8 +1,20 @@
 package store
 
-import "github.com/jmoiron/sqlx"
+import (
+	"github.com/jmoiron/sqlx"
+	"github.com/praelatus/backend/store"
+)
 
-type SqlStore struct {
+const (
+	V1 = iota
+)
+
+type SqlStore interface {
+	SchemaVersion() int
+	RunQuery(string) (*sqlx.Rows, error)
+}
+
+type PostgresStore struct {
 	db       *sqlx.DB
 	replicas *[]sqlx.DB
 	users    *sqlUserStore
@@ -10,14 +22,18 @@ type SqlStore struct {
 	tickets  *sqlTicketStore
 }
 
-func (ss *SqlStore) Users() UserStore {
-	return ss.users
+func (pg *PostgresStore) Users() store.UserStore {
+	return pg.users
 }
 
-func (ss *SqlStore) Projects() ProjectStore {
-	return ss.projects
+func (pg *PostgresStore) Projects() store.ProjectStore {
+	return pg.projects
 }
 
-func (ss *SqlStore) Tickets() TicketStore {
-	return ss.tickets
+func (pg *PostgresStore) Tickets() store.TicketStore {
+	return pg.tickets
+}
+
+func (pg *PostgresStore) RunQuery(q string) (*sqlx.Rows, error) {
+	return pg.db.Queryx(q)
 }
