@@ -1,30 +1,19 @@
 package store
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
-	"github.com/jinzhu/gorm"
 )
 
 type sqlTicketStore struct {
-	db *gorm.DB
+	db *sqlx.DB
 }
 
-func (st *sqlTicketStore) Get(id string) models.Ticket {
-	var tdb models.TicketDB
-	var reporter, asignee Users
+func (st *sqlTicketStore) Get(id string) *models.TicketJSON {
+	var tdb models.TicketJSON
+	var reporter, assignee models.User
 
-	if isID(id) {
-		st.db.Where("id = ?", id).First(&tdb)
-	} else {
-		st.db.Where("key = ?", id).First(&tdb)
-	}
+	rws, err := st.db.Queryx("SELECT * FROM tickets WHERE id = ?", id)
 
-	db.Where("id = ?", t.AssigneeID).First(&asignee)
-	db.Where("id = ?", t.ReporterID).First(&reporter)
-
-	return Ticket{
-		*tdb,
-		reporter,
-		assignee,
-	}
+	return &models.TicketJSON{}
 }
