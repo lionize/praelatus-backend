@@ -1,11 +1,19 @@
 package store
 
-import "github.com/praelatus/backend/models"
+import (
+	"github.com/jmoiron/sqlx"
+	"github.com/praelatus/backend/models"
+)
 
 type Store interface {
 	Users() UserStore
 	Projects() ProjectStore
 	Tickets() TicketStore
+}
+
+type SqlStore interface {
+	SchemaVersion() int
+	RunQuery(string) (*sqlx.Rows, error)
 }
 
 type Cache interface {
