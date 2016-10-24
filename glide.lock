@@ -1,48 +1,23 @@
-hash: 29dfdf13197bfcbc788fe1f891e7add05468e0a74c980ad68211d846494c3dbc
-updated: 2016-10-21T21:22:45.553619288-04:00
+hash: e0011061005ce6d4913bc68452109c1b94a73793a43df5d1c27e5993c6fc48d3
+updated: 2016-10-23T20:03:37.249851511-04:00
 imports:
 - name: github.com/gorilla/context
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
+- name: github.com/iamthemuffinman/logsip
+  version: 3a95eed05b2e5a0eba01e0d30a8bf01988e4f511
 - name: github.com/jinzhu/gorm
   version: 5174cc5c242a728b435ea2be8a2f7f998e15429b
-- name: github.com/jinzhu/inflection
-  version: 74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff
 - name: github.com/jmoiron/sqlx
   version: 05b81a7d5d38058e42148dc01f17daf4acba4640
   subpackages:
   - reflectx
 - name: github.com/labstack/echo
   version: 04e6901d05b58ddbae579a6252a3d1bb3f334adc
-  subpackages:
-  - context
-  - engine
-  - log
-- name: github.com/labstack/gommon
-  version: f3b1a1b3bd4726161e1200863d278df7da5e66ff
-  subpackages:
-  - color
-  - log
-- name: github.com/mattn/go-colorable
-  version: 6c903ff4aa50920ca86087a280590b36b3152b9c
-- name: github.com/mattn/go-isatty
-  version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
-- name: github.com/Sirupsen/logrus
-  version: 4b6ea7319e214d98c938f12692336f7ca9348d6b
-- name: github.com/valyala/fasttemplate
-  version: 3b874956e03f1636d171bda64b130f9135f42cff
 - name: golang.org/x/crypto
   version: 3c0d69f1777220f1a1d2ec373cb94a282f03eb42
   subpackages:
   - bcrypt
   - blowfish
-- name: golang.org/x/net
-  version: 41c5c5cb12965112d2e298342c73e6b3e045a14a
-  subpackages:
-  - context
-- name: golang.org/x/sys
-  version: 002cbb5f952456d0c50e0d2aff17ea5eca716979
-  subpackages:
-  - unix
 testImports: []
