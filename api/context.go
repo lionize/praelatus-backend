@@ -1,11 +1,13 @@
 package api
 
 import (
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
+	log "github.com/iamthemuffinman/logsip"
 	"github.com/praelatus/backend/models"
 )
 
@@ -13,7 +15,8 @@ import (
 // holding the currently logged in user.
 type Context struct {
 	CurrentUser *models.User
-	Vars        *Vars
+	Vars        map[string]string
+	Body        []byte
 }
 
 // Authenticated will return a boolean indicating whether or not CurrentUser is
@@ -24,25 +27,6 @@ func (c *Context) Authenticated() bool {
 	}
 
 	return false
-}
-
-type Vars struct {
-	internal map[string]interface{}
-}
-
-func (v *Vars) String(key string) string {
-	vl, ok := v.internal[key].(string)
-	if ok {
-		return vl
-	}
-
-	return ""
-}
-
-func NewVars(m map[string]interface{}) *Vars {
-	return &Vars{
-		internal: m,
-	}
 }
 
 // AppHandler is a custom function type which handles a http request, it takes
@@ -76,11 +60,19 @@ type handler struct {
 
 // ServeHTTP allows our handler struct to implement the http.Handler interface.
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var token string
+	var tokenStr string
 	start := time.Now()
 
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
 	c := &Context{}
-	c.Vars = NewVars(mux.Vars(r))
+	c.Vars = mux.Vars(r)
+	c.Body = b
 
 	// Attempt to parse token out of the header
 	authHeader := r.Header.Get("Authorization")
@@ -104,13 +96,13 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 	}
 
 	statusCode, response := h.fn(c)
-	Log.Infof("|%s| [%d] %s %s",
+	log.Infof("|%s| [%d] %s %s",
 		r.Method, statusCode, r.URL.Path, time.Since(start).String())
 
 	w.WriteHeader(statusCode)
-	_, err := w.Write(response)
+	_, err = w.Write(response)
 	if err != nil {
-		Log.Error(err)
+		log.Error(err)
 	}
 
 }
