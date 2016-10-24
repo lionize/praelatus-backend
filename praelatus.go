@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/praelatus/backend/api"
-
-	log "github.com/golang/glog"
 )
 
 func main() {
@@ -15,7 +13,6 @@ func main() {
 	fmt.Println("Initializing database...")
 
 	mw := io.MultiWriter(os.Stdout)
-	log.Info("Hello!")
 
 	api := api.New()
 
