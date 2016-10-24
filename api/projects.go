@@ -1,9 +1,8 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
-
-	"github.com/labstack/echo"
 )
 
 func InitProjectRoutes() {
@@ -11,19 +10,21 @@ func InitProjectRoutes() {
 	BaseRoutes.Projects.Handle("/{key}", Authentication(GetProject, true, true)).Methods("GET")
 }
 
-func ListProjects(c echo.Context) error {
+func ListProjects(c *Context) (int, []byte) {
 	projects, err := s.Store.FindAllProjects()
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
+		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	return c.JSON(http.StatusOK, projects)
+	pjson, err := json.Marshal(projects)
+	if err != nil {
+		return http.StatusInternalServerError, []byte(err.Error())
+	}
+
+	return http.StatusOK, pjson
 }
 
-func (gc *GlobalContext) GetProject(c echo.Context) error {
-	// TODO: Sanitize this somehow? Not sure how this could really be used
-	// maliciously....
-	key := c.Param("key")
+func GetProject(c *Context) (int, []byte) {
 	p, err := s.Store.Project().Get(key)
 	if err != nil {
 		// TODO: Don't return raw terrible stuff.

@@ -8,15 +8,16 @@ import (
 
 // User represents a user of our application
 type User struct {
-	ID              uint         `json:"-" gorm:"primary_key"`
-	Username        string       `json:"username" gorm:"unique"`
+	ID              uint         `json:"id"`
+	Username        string       `json:"username"`
 	Password        string       `json:"password,omitempty"`
-	Email           string       `json:"email" gorm:"unique"`
+	Email           string       `json:"email"`
 	FullName        string       `json:"fullName"`
-	Memberships     []Membership `json:"-"`
-	AssignedTickets []Ticket     `json:"assignedTickets,omitempty" gorm:"ForeignKey:Assignee"`
-	ReportedTickets []Ticket     `json:"reportedTickets,omitempty" gorm:"ForeignKey:Reporter"`
-	IsAdmin         bool         `json:"isAdmin"`
+	IsAdmin         bool         `json:"isAdmin,omitempty"`
+}
+
+func (u *User) String() string {
+	return fmt.Sprintf("<User %d, %s>", u.ID, u.Username)
 }
 
 // NewUser will create the user after encrypting the password with bcrypt
@@ -35,6 +36,3 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 	}, nil
 }
 
-func (u *User) String() string {
-	return fmt.Sprintf("<User %d, %s>", u.ID, u.Username)
-}
