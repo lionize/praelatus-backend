@@ -1,21 +1,21 @@
 package api
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
 	"github.com/praelatus/backend/models"
-	"github.com/labstack/echo"
 )
 
 func InitUserRoutes() {
 	BaseRoutes.Users.Handle("/", AdminRequired(ListUsers, true, true)).Methods("GET")
-	BaseRoutes.Users.Handle("/create", (CreateUser, true, true)).Methods("POST")
+	BaseRoutes.Users.Handle("/", NoAuth(CreateUser, true, true)).Methods("POST")
 	BaseRoutes.Users.Handle("/{name}", Authentication(GetUser, true, true)).Methods("GET")
 	BaseRoutes.Users.Handle("/{name}", Authentication(UpdateUser, true, true)).Methods("POST", "PUT")
 }
 
-func (as *ApiServer) ListUsers(c echo.Context) error {
+func ListUsers(c *Context) error {
 	users, err := as.Store.Users().GetAll()
 	if err != nil {
 		// TODO: Don't return raw terrible stuff.
@@ -25,69 +25,48 @@ func (as *ApiServer) ListUsers(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-func (as *ApiServer) CreateUser(c echo.Context) error {
+func CreateUser(c *Context) error {
 	var u models.User
 
-	c.Bind(&u)
-
+	json.Unmarshal(c.Body)
 	err := as.Store.Users().Save(&u)
 	// TODO: Handle errors properly (i.e. username taken etc.)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, dberr.Error())
 	}
 
-	return c.JSON(http.StatusOK, &user)
+	return http.StatusOK, &user
 }
 
-func (as *ApiServer) LoginUser(c echo.Context) error {
-	var l models.LoginRequest
-
-	c.Bind(&l)
-
-	user, dberr := l.Login(gc.db)
-	// TODO: Handle errors properly (i.e. bad password)
-	if dberr != nil {
-		gc.log.Error("Database error logging in")
-		return c.String(http.StatusInternalServerError,
-			"Username or password was invalid.")
-	}
-
-	return c.JSON(http.StatusOK, &user)
+func LoginUser(c *Context) (int, []byte) {
+	return http.StatusNotImplemented, []byte("Not implemented")
 }
 
-func (as *ApiServer) GetUser(c echo.Context) error {
-	var gerr error
+func GetUser(c *Context) (int, []byte) {
 	var u models.User
+	var err error
 
-	// TODO: Sanitize this somehow? Not sure how this could really be used
-	// maliciously....
-	username := c.Param("name")
+	username := c.Vars.String("username")
 
 	// If we get an integer search based on ID instead of username
 	if id, err := strconv.Atoi(username); err == nil {
-		u, gerr = as.Store.Users().Get(id)
+		u, err = Store.Users().Get(id)
 	} else {
-		u, gerr = as.Store.Users().GetByName(username)
+		u, err = Store.Users().GetByUsername(username)
 	}
 
-	if gerr != nil {
+	// TODO: Properly return not found when appropriate
+	if err != nil {
 		// TODO: Don't return raw terrible stuff.
-		return c.String(http.StatusInternalServerError, gerr.Error())
+		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	if u.Username == "" {
-		return c.String(http.StatusNotFound, "User does not exist.")
-	}
+	ujson, err := json.Marshal(&u)
 
-	// Don't return the password
-	u.Password = ""
-
-	return c.JSON(http.StatusOK, &u)
+	return http.StatusOK, ujson
 }
 
-// TODO: implement this, updating will suck if it needs to be performant
-func (as *ApiServer) UpdateUser(c echo.Context) error {
-	var u models.User
-	c.Bind(&u)
-	return nil
+// TODO: implement this
+func UpdateUser(c *Context) (int, []byte) {
+	return http.StatusNotImplemented, []byte("Not implemented")
 }
