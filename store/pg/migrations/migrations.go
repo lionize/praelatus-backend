@@ -1,4 +1,4 @@
-package postgres
+package migrations
 
 import "github.com/praelatus/backend/store"
 

@@ -1,4 +1,4 @@
-package postgres
+package migrations
 
 const v1Schema = `
 CREATE OR REPLACE FUNCTION update_date()	
