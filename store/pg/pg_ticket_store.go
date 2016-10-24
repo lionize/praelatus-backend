@@ -1,19 +1,14 @@
-package store
+package pg
 
-import (
-	"github.com/jmoiron/sqlx"
-	"github.com/praelatus/backend/models"
-)
+import "github.com/jmoiron/sqlx"
 
-type sqlTicketStore struct {
+type pgTicketStore struct {
 	db *sqlx.DB
 }
 
-func (st *sqlTicketStore) Get(id string) *models.TicketJSON {
-	var tdb models.TicketJSON
-	var reporter, assignee models.User
-
-	rws, err := st.db.Queryx("SELECT * FROM tickets WHERE id = ?", id)
-
-	return &models.TicketJSON{}
-}
+// TODO implement interfaces
+// func (st *sqlTicketStore) Get(id string) *models.TicketJSON {
+// 	var tdb models.Ticket
+// 	rws, err := st.db.Queryx("SELECT * FROM tickets WHERE id = ?", id)
+// 	return &models.TicketJSON{}
+// }

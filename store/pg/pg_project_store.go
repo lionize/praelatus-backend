@@ -1,4 +1,4 @@
-package store
+package pg
 
 import "github.com/praelatus/backend/models"
 

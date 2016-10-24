@@ -1,8 +1,8 @@
-package store
+package pg
 
 import (
-	"github.com/praelatus/backend/models"
 	"github.com/jinzhu/gorm"
+	"github.com/praelatus/backend/models"
 )
 
 // TODO: All of it.
