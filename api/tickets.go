@@ -8,9 +8,9 @@ import (
 )
 
 func InitTicketRoutes() {
-	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", NoAuth(GetTicket, false, false)).Methods("GET")
-	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", NoAuth(CreateTicket, false, false)).Methods("POST")
-	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", NoAuth(UpdateTicket, false, false)).Methods("PUT")
+	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", NoAuth(GetTicket)).Methods("GET")
+	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", NoAuth(CreateTicket)).Methods("POST")
+	BaseRoutes.Tickets.Handle("/{team_slug}/{pkey}/{key}", AuthRequired(UpdateTicket)).Methods("PUT")
 }
 
 // TODO: Fix error handling
@@ -53,8 +53,10 @@ func UpdateTicket(c *Context) (int, []byte) {
 }
 
 // GetTicket will get a specific ticket
-func GetTicket(c *Context) error {
-	key := c.Vars.String("key")
+func GetTicket(c *Context) (int, []byte) {
+	key := c.Vars["key"]
+	pkey := c.Vars["pkey"]
+	team_slug := c.Vars["team_slug"]
 
 	t, err := Store.Tickets().Get(key)
 	if err != nil {
@@ -66,7 +68,7 @@ func GetTicket(c *Context) error {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	return http.StatusOK, &t
+	return http.StatusOK, t
 }
 
 // TODO: Implement workflows
