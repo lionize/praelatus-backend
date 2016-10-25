@@ -70,9 +70,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c := &Context{}
-	c.Vars = mux.Vars(r)
-	c.Body = b
+	c := &Context{
+		Vars: mux.Vars(r),
+		Body: b,
+	}
 
 	// Attempt to parse token out of the header
 	authHeader := r.Header.Get("Authorization")
