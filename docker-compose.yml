@@ -8,6 +8,8 @@ services:
     praelatus:
         build: .
         command: praelatus
+        volumes:
+            - .:/go/src/github.com/praelatus/backend
         ports:
             - "8080:8080"
         depends_on:
