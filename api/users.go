@@ -5,48 +5,63 @@ import (
 	"net/http"
 	"strconv"
 
+	mw "github.com/praelatus/backend/middleware"
 	"github.com/praelatus/backend/models"
 )
 
 func InitUserRoutes() {
-	BaseRoutes.Users.Handle("/", AdminRequired(ListUsers, true, true)).Methods("GET")
-	BaseRoutes.Users.Handle("/", NoAuth(CreateUser, true, true)).Methods("POST")
-	BaseRoutes.Users.Handle("/{name}", Authentication(GetUser, true, true)).Methods("GET")
-	BaseRoutes.Users.Handle("/{name}", Authentication(UpdateUser, true, true)).Methods("POST", "PUT")
+	BaseRoutes.Users.Handle("/", mw.Admin(ListUsers)).Methods("GET")
+	BaseRoutes.Users.Handle("/", mw.Default(CreateUser)).Methods("POST")
+	BaseRoutes.Users.Handle("/{name}", mw.Auth(GetUser)).Methods("GET")
+	BaseRoutes.Users.Handle("/{name}", mw.Auth(UpdateUser)).Methods("POST", "PUT")
 }
 
-func ListUsers(c *Context) error {
+func ListUsers(c *mw.Context) (int, []byte) {
 	users, err := as.Store.Users().GetAll()
+	// TODO: better error handling
 	if err != nil {
-		// TODO: Don't return raw terrible stuff.
-		return c.String(http.StatusInternalServerError, err.Error())
+		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	return c.JSON(http.StatusOK, users)
+	jsn, err := json.Marshal(&users)
+	if err != nil {
+		return http.StatusInternalServerError, []byte(err.Error())
+	}
+
+	return http.StatusOK, jsn
 }
 
-func CreateUser(c *Context) error {
+func CreateUser(c *mw.Context) (int, []byte) {
+	// TODO: Handle errors properly (i.e. username taken etc.)
 	var u models.User
 
-	json.Unmarshal(c.Body)
-	err := as.Store.Users().Save(&u)
-	// TODO: Handle errors properly (i.e. username taken etc.)
+	err := c.JSON(&u)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, dberr.Error())
+		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	return http.StatusOK, &user
+	err = Store.Users().Save(&u)
+	if err != nil {
+		return http.StatusInternalServerError, []byte(err.Error())
+	}
+
+	jsn, err := json.Marshal(&u)
+	if err != nil {
+		return http.StatusInternalServerError, []byte(err.Error())
+	}
+
+	return http.StatusOK, jsn
 }
 
-func LoginUser(c *Context) (int, []byte) {
+func LoginUser(c *mw.Context) (int, []byte) {
 	return http.StatusNotImplemented, []byte("Not implemented")
 }
 
-func GetUser(c *Context) (int, []byte) {
+func GetUser(c *mw.Context) (int, []byte) {
 	var u models.User
 	var err error
 
-	username := c.Vars.String("username")
+	username := c.Var("username")
 
 	// If we get an integer search based on ID instead of username
 	if id, err := strconv.Atoi(username); err == nil {
@@ -67,6 +82,6 @@ func GetUser(c *Context) (int, []byte) {
 }
 
 // TODO: implement this
-func UpdateUser(c *Context) (int, []byte) {
+func UpdateUser(c *mw.Context) (int, []byte) {
 	return http.StatusNotImplemented, []byte("Not implemented")
 }

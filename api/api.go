@@ -1,7 +1,10 @@
 package api
 
 import (
+	"os"
+
 	"github.com/gorilla/mux"
+	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg"
 )
 
@@ -13,11 +16,11 @@ type Routes struct {
 }
 
 var BaseRoutes *Routes
-var Store *store.Store
+var Store store.Store
 var Cache *store.Cache
 
 func BuildRoutes() {
-	Store = pg.NewStore(os.getenv("PRAELATUS_DB"))
+	Store = pg.New(os.Getenv("PRAELATUS_DB"))
 
 	BaseRoutes = &Routes{}
 	BaseRoutes.Root = mux.NewRouter()

@@ -22,8 +22,8 @@ type Cache interface {
 }
 
 type UserStore interface {
-	Get(id string) (models.User, error)
-	GetByName(username string) (models.User, error)
+	Get(id int) (models.User, error)
+	GetByUsername(username string) (models.User, error)
 	GetAll() ([]models.User, error)
 	Save(user *models.User) error
 }
