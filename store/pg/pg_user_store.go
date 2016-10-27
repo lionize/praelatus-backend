@@ -1,14 +1,14 @@
 package pg
 
 import (
-	"github.com/jinzhu/gorm"
+	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
 
 // TODO: All of it.
 
 type sqlUserStore struct {
-	db *gorm.DB
+	db *sqlx.DB
 }
 
 func (su *sqlUserStore) Get(id string) (models.User, error) {
