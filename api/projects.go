@@ -3,37 +3,47 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	mw "github.com/praelatus/backend/middleware"
 )
 
 func InitProjectRoutes() {
-	BaseRoutes.Projects.Handle("/", Authentication(ListProjects, true, true)).Methods("GET")
-	BaseRoutes.Projects.Handle("/{key}", Authentication(GetProject, true, true)).Methods("GET")
+	BaseRoutes.Projects.Handle("/", mw.Auth(ListProjects)).Methods("GET")
+	BaseRoutes.Projects.Handle("/{team_slug}/{pkey}", mw.Auth(GetProject)).Methods("GET")
 }
 
-func ListProjects(c *Context) (int, []byte) {
-	projects, err := s.Store.FindAllProjects()
+// TODO
+func ListProjects(c *mw.Context) (int, []byte) {
+	projects, err := Store.Projects().All()
 	if err != nil {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	pjson, err := json.Marshal(projects)
+	jsn, err := json.Marshal(projects)
 	if err != nil {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	return http.StatusOK, pjson
+	return http.StatusOK, jsn
 }
 
-func GetProject(c *Context) (int, []byte) {
-	p, err := s.Store.Project().Get(key)
+// TODO
+func GetProject(c *mw.Context) (int, []byte) {
+	p, err := Store.Project().Get(c.Var("team_slug"), c.Var("key"))
+
+	// TODO: better error handling
 	if err != nil {
-		// TODO: Don't return raw terrible stuff.
-		return c.String(http.StatusInternalServerError, err.Error())
+		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
 	if p.Key == "" {
-		return c.String(http.StatusNotFound, "Project does not exist.")
+		return http.StatusNotFound, []byte("Project does not exist.")
 	}
 
-	return c.JSON(http.StatusOK, &p)
+	jsn, err := json.Marshal(&p)
+	if err != nil {
+		return http.StatusInternalServerError, []byte(err.Error())
+	}
+
+	return http.StatusOK, jsn
 }
