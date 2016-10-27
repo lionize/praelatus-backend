@@ -20,9 +20,9 @@ type Store struct {
 type pgProjectStore struct{}
 type pgUserStore struct{}
 
-// NewStore connects to the postgres database provided and returns a store
+// New connects to the postgres database provided and returns a store
 // that's connected.
-func NewStore(conn string, replicas ...string) *Store {
+func New(conn string, replicas ...string) store.Store {
 	// TODO: replica support
 	s := &Store{}
 
