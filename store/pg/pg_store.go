@@ -52,38 +52,55 @@ func New(conn string, replicas ...string) store.Store {
 	return s
 }
 
-// Fields returns the underlying FieldStore for a postgres DB
-func (pg *Store) Fields() store.FieldStore {
-	return nil
-}
-
 // Users returns the underlying UserStore for a postgres DB
-// TODO fix structs to implement interface
 func (pg *Store) Users() store.UserStore {
 	return pg.users
 }
 
-// Projects returns the underlying ProjectStore for a postgres DB
-func (pg *Store) Projects() store.ProjectStore {
-	// return pg.projects
-	return nil
+// Teams returns the underlying TeamStore for a postgres DB
+func (pg *Store) Teams() store.TeamStore {
+	return pg.teams
+}
+
+// Fields returns the underlying FieldStore for a postgres DB
+func (pg *Store) Fields() store.FieldStore {
+	return pg.fields
 }
 
 // Tickets returns the underlying TicketStore for a postgres DB
 func (pg *Store) Tickets() store.TicketStore {
-	// return pg.tickets
-	return nil
+	return pg.tickets
+}
+
+// Projects returns the underlying ProjectStore for a postgres DB
+func (pg *Store) Projects() store.ProjectStore {
+	return pg.projects
+}
+
+// Statuses returns the underlying StatusStore for a postgres DB
+func (pg *Store) Statuses() store.StatusStore {
+	return pg.statuses
+}
+
+// Workflows returns the underlying WorkflowStore for a postgres DB
+func (pg *Store) Workflows() store.WorkflowStore {
+	return pg.workflows
+}
+
+// Transitions returns the underlying TransitionStore for a postgres DB
+func (pg *Store) Transitions() store.TransitionStore {
+	return pg.transitions
+}
+
+// RunExec executes q it is analogous to Exec on the sqlx.DB
+func (pg *Store) RunExec(q string) (sql.Result, error) {
+	return pg.db.Exec(q)
 }
 
 // RunQuery runs the query specified by q and returns the rows and any errors
 // encountered.
 func (pg *Store) RunQuery(q string) (*sqlx.Rows, error) {
 	return pg.db.Queryx(q)
-}
-
-// RunExec executes q it is analogous to Exec on the sqlx.DB
-func (pg *Store) RunExec(q string) (sql.Result, error) {
-	return pg.db.Exec(q)
 }
 
 // SchemaVersion returns the current schema version of the database.
