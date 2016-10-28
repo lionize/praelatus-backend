@@ -1,6 +1,8 @@
 package pg
 
 import (
+	"database/sql"
+
 	log "github.com/iamthemuffinman/logsip"
 	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/store"
@@ -9,40 +11,56 @@ import (
 
 // Store implements the store.Store and store.SQLStore interface for a postgres DB.
 type Store struct {
-	db       *sqlx.DB
-	replicas *[]sqlx.DB
-	users    *pgUserStore
-	projects *pgProjectStore
-	tickets  *pgTicketStore
+	db          *sqlx.DB
+	replicas    []sqlx.DB
+	users       *UserStore
+	projects    *ProjectStore
+	fields      *FieldStore
+	workflows   *WorkflowStore
+	transitions *TransitionStore
+	statuses    *StatusStore
+	teams       *TeamStore
 }
-
-// TODO implement interfaces
-type pgProjectStore struct{}
-type pgUserStore struct{}
 
 // New connects to the postgres database provided and returns a store
 // that's connected.
 func New(conn string, replicas ...string) store.Store {
 	// TODO: replica support
-	s := &Store{}
 
 	d, err := sqlx.Open("postgres", conn)
 	if err != nil {
 		log.Panicln(err)
 	}
 
-	s.db = d
+	s := &Store{
+		db:          d,
+		replicas:    []sqlx.DB{},
+		users:       &UserStore{d},
+		projects:    &ProjectStore{d},
+		fields:      &FieldStore{d},
+		workflows:   &WorkflowStore{d},
+		transitions: &TransitionStore{d},
+		statuses:    &StatusStore{d},
+		teams:       &TeamStore{d},
+	}
 
-	migrations.RunMigration(s)
+	err = migrations.RunMigration(s)
+	if err != nil {
+		log.Panicln(err)
+	}
 
 	return s
+}
+
+// Fields returns the underlying FieldStore for a postgres DB
+func (pg *Store) Fields() store.FieldStore {
+	return nil
 }
 
 // Users returns the underlying UserStore for a postgres DB
 // TODO fix structs to implement interface
 func (pg *Store) Users() store.UserStore {
-	// return pg.users
-	return nil
+	return pg.users
 }
 
 // Projects returns the underlying ProjectStore for a postgres DB
@@ -61,6 +79,11 @@ func (pg *Store) Tickets() store.TicketStore {
 // encountered.
 func (pg *Store) RunQuery(q string) (*sqlx.Rows, error) {
 	return pg.db.Queryx(q)
+}
+
+// RunExec executes q it is analogous to Exec on the sqlx.DB
+func (pg *Store) RunExec(q string) (sql.Result, error) {
+	return pg.db.Exec(q)
 }
 
 // SchemaVersion returns the current schema version of the database.
