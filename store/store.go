@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
@@ -13,17 +15,10 @@ type Store interface {
 	Fields() FieldStore
 }
 
-// FieldStore contains methods for storing and retrieving Fields and
-// FieldValues
-type FieldStore interface {
-	Get(id int) (models.Field, error)
-}
-
-// SQLStore is used where you need a store plus extra methods for dealing with
-// a sql backend.
+// SQLStore is used where you need extra methods for dealing with a sql backend.
 type SQLStore interface {
-	Store
 	SchemaVersion() int
+	RunExec(string) (sql.Result, error)
 	RunQuery(string) (*sqlx.Rows, error)
 }
 
@@ -33,24 +28,35 @@ type Cache interface {
 	Set(string, interface{}) error
 }
 
+// FieldStore contains methods for storing and retrieving Fields and
+// FieldValues
+type FieldStore interface {
+	Get(id int) (*models.Field, error)
+	ByProject(int) (*models.Field, error)
+	Save(*models.Field) error
+}
+
 // UserStore contains methods for storing and retrieving Users
 type UserStore interface {
-	Get(id int) (models.User, error)
-	GetByUsername(username string) (models.User, error)
+	Get(int) (*models.User, error)
+	GetByUsername(string) (*models.User, error)
 	GetAll() ([]models.User, error)
-	Save(user *models.User) error
+	New(*models.User) (*models.User, error)
+	Save(*models.User) error
 }
 
 // ProjectStore contains methods for storing and retrieving Projects
 type ProjectStore interface {
-	Get(string) models.Project
+	Get(int) *models.Project
 	GetAll() []models.Project
-	GetMembers(string) []models.User
+	New(*models.Project) (*models.Project, error)
+	Save(*models.Project) error
 }
 
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
-	Get(string) models.Ticket
+	Get(int) *models.Ticket
+	GetByKey(string, string, string) (*models.Ticket, error)
 }
 
 // TeamStore contains methods for storing and retrieving Teams
