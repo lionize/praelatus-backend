@@ -7,7 +7,7 @@ import (
 	"github.com/praelatus/backend/store/pg/migrations"
 )
 
-// Store implements the store.Store interface for a postgres DB.
+// Store implements the store.Store and store.SQLStore interface for a postgres DB.
 type Store struct {
 	db       *sqlx.DB
 	replicas *[]sqlx.DB
