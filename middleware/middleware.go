@@ -41,8 +41,13 @@ func (s *Stack) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	statusCode, response := s.Fn(c)
-	log.Infof("|%s| [%d] %s %s",
-		r.Method, statusCode, r.URL.Path, time.Since(start).String())
+	if statusCode >= 300 {
+		log.Errorf("|%s| [%d] %s %s",
+			r.Method, statusCode, r.URL.Path, time.Since(start).String())
+	} else {
+		log.Infof("|%s| [%d] %s %s",
+			r.Method, statusCode, r.URL.Path, time.Since(start).String())
+	}
 
 	w.WriteHeader(statusCode)
 	_, err := w.Write(response)
