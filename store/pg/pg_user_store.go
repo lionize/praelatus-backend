@@ -66,12 +66,14 @@ func (s *UserStore) Save(u *models.User) error {
 }
 
 // New will create the user in the database
-func (s *UserStore) New(u *models.User) (*models.User, error) {
+func (s *UserStore) New(u *models.User) error {
 	id, err := s.db.Exec(`INSERT INTO users VALUES
 		(username, password, email, full_name, is_admin) = (?, ?, ?, ?);`,
 		u.Username, u.Password, u.Email, u.FullName, u.IsAdmin)
+	if err != nil {
+		return err
+	}
 
-	// TODO: Maybe not ignore this error?
-	u.ID, _ = id.LastInsertId()
-	return u, err
+	u.ID, err = id.LastInsertId()
+	return err
 }
