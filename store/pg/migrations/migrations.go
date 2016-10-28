@@ -14,7 +14,7 @@ func checkMigration(e error) {
 
 // RunMigration will run all database migrations depending on the version
 // returned from the database_information table.
-func RunMigration(s store.SqlStore) error {
+func RunMigration(s store.SQLStore) error {
 	version := 0
 
 	rws, err := s.RunQuery("SELECT schema_version FROM database_information;")
