@@ -8,14 +8,14 @@ type TicketType struct {
 	Name string `json:"name"`
 }
 
-// Ticket represents an issue / ticket in the database.
+// Ticket represents a ticket in the database.
 type Ticket struct {
 	ID          int       `json:"id"`
-	Key         string    `json:"ticketKey"`
+	Key         string    `json:"key"`
 	Summary     string    `json:"summary"`
 	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 
 	ProjectID    uint `json:"-"`
 	TicketTypeID uint `json:"-"`
