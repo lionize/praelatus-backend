@@ -8,12 +8,12 @@ import (
 
 // User represents a user of our application
 type User struct {
-	ID              uint         `json:"id"`
-	Username        string       `json:"username"`
-	Password        string       `json:"password,omitempty"`
-	Email           string       `json:"email"`
-	FullName        string       `json:"fullName"`
-	IsAdmin         bool         `json:"isAdmin,omitempty"`
+	ID       int64  `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password,omitempty"`
+	Email    string `json:"email"`
+	FullName string `json:"full_name" db:"full_name"`
+	IsAdmin  bool   `json:"is_admin,omitempty" db:"is_admin"`
 }
 
 func (u *User) String() string {
@@ -35,4 +35,3 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 		IsAdmin:  admin,
 	}, nil
 }
-
