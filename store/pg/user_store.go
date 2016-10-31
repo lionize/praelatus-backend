@@ -5,6 +5,8 @@ import (
 	"github.com/praelatus/backend/models"
 )
 
+// UserStore contains methods for storing and retrieving Users from a Postgres
+// DB
 type UserStore struct {
 	db *sqlx.DB
 }

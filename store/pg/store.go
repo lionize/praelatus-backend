@@ -17,6 +17,7 @@ type Store struct {
 	projects    *ProjectStore
 	fields      *FieldStore
 	workflows   *WorkflowStore
+	tickets     *TicketStore
 	transitions *TransitionStore
 	statuses    *StatusStore
 	teams       *TeamStore
@@ -38,6 +39,7 @@ func New(conn string, replicas ...string) store.Store {
 		users:       &UserStore{d},
 		projects:    &ProjectStore{d},
 		fields:      &FieldStore{d},
+		tickets:     &TicketStore{d},
 		workflows:   &WorkflowStore{d},
 		transitions: &TransitionStore{d},
 		statuses:    &StatusStore{d},
