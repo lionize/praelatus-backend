@@ -44,7 +44,8 @@ func (c *Context) JSON(m interface{}) error {
 // String will return the context value at key as a string if possible,
 // returns "" if an error occurs.
 func (c *Context) String(key string) string {
-	if v, ok := c.Val[key].(string); ok {
+	v, ok := c.Val[key].(string)
+	if ok {
 		return v
 	}
 
