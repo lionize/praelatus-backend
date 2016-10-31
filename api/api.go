@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -19,7 +20,7 @@ var BaseRoutes *Routes
 var Store store.Store
 var Cache *store.Cache
 
-func BuildRoutes() {
+func Run(port string) {
 	Store = pg.New(os.Getenv("PRAELATUS_DB"))
 
 	BaseRoutes = &Routes{}
@@ -31,4 +32,6 @@ func BuildRoutes() {
 	InitUserRoutes()
 	InitProjectRoutes()
 	InitTicketRoutes()
+
+	http.ListenAndServe(port, BaseRoutes.Root)
 }
