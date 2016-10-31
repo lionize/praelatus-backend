@@ -44,7 +44,7 @@ func New(conn string, replicas ...string) store.Store {
 		teams:       &TeamStore{d},
 	}
 
-	err = migrations.RunMigration(s)
+	err = migrations.RunMigrations(s)
 	if err != nil {
 		log.Panicln(err)
 	}
