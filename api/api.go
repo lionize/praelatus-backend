@@ -8,6 +8,7 @@ import (
 	"github.com/praelatus/backend/store/pg"
 )
 
+// Routes holds all of the routes for the different API endpoints.
 type Routes struct {
 	Root     *mux.Router
 	Users    *mux.Router
@@ -15,8 +16,13 @@ type Routes struct {
 	Tickets  *mux.Router
 }
 
+// Used in starting the router.
 var BaseRoutes *Routes
+
+// Store is the global store used in our HTTP handlers.
 var Store store.Store
+
+// Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
 func BuildRoutes() {
