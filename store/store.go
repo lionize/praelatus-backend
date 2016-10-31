@@ -56,7 +56,7 @@ type UserStore interface {
 // ProjectStore contains methods for storing and retrieving Projects
 type ProjectStore interface {
 	Get(int) (*models.Project, error)
-	GetAll() []models.Project
+	GetAll() ([]models.Project, error)
 
 	New(*models.Project) error
 	Save(*models.Project) error
@@ -64,8 +64,8 @@ type ProjectStore interface {
 
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
-	Get(int) *models.Ticket
-	GetByKey(string, string, string) (*models.Ticket, error)
+	Get(int) (*models.Ticket, error)
+	GetByKey(teamSlug string, projectKey string, ticketKey string) (*models.Ticket, error)
 
 	New(*models.Ticket) error
 	Save(*models.Ticket) error
@@ -98,8 +98,8 @@ type WorkflowStore interface {
 
 // TransitionStore contains methods for storing and retrieving Transitions
 type TransitionStore interface {
-	Get(int) (*models.WorkflowTransition, error)
+	Get(int) (*models.Transition, error)
 
-	New(*models.WorkflowTransition) error
-	Save(*models.WorkflowTransition) error
+	New(*models.Transition) error
+	Save(*models.Transition) error
 }
