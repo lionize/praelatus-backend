@@ -37,20 +37,14 @@ func (c *Context) Body() ([]byte, error) {
 
 // JSON will unmarshal the body of the request into the interface m
 func (c *Context) JSON(m interface{}) error {
-	b, err := c.Body()
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(b, m)
-	return err
+	decoder := json.NewDecoder(c.R.Body)
+	return decoder.Decode(m)
 }
 
 // String will return the context value at key as a string if possible,
 // returns "" if an error occurs.
 func (c *Context) String(key string) string {
-	v, ok := c.Val[key].(string)
-	if ok {
+	if v, ok := c.Val[key].(string); ok {
 		return v
 	}
 

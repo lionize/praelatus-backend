@@ -2,10 +2,8 @@ package: github.com/praelatus/backend
 import:
 - package: github.com/gorilla/mux
   version: ^1.1.0
+- package: github.com/iamthemuffinman/logsip
 - package: github.com/jmoiron/sqlx
-- package: github.com/labstack/echo
-  version: ^2.1.0
 - package: golang.org/x/crypto
   subpackages:
   - bcrypt
-- package: github.com/iamthemuffinman/logsip
