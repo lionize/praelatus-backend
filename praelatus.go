@@ -14,8 +14,11 @@ func main() {
 
 	mw := io.MultiWriter(os.Stdout)
 
-	api := api.New()
-
 	logger.Info("Ready to serve requests!")
-	api.Run(":3001")
+	port := os.Getenv("PRAELATUS_PORT")
+	if port == "" {
+		port = ":8080"
+	}
+
+	api.Run(port)
 }
