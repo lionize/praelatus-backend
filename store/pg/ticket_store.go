@@ -11,9 +11,12 @@ type TicketStore struct {
 	db *sqlx.DB
 }
 
-// Get TODO
+// Get gets a Ticket from a postgres DB by it's ID
 func (ts *TicketStore) Get(ID int) (*models.Ticket, error) {
-	return nil, nil
+	var t models.Ticket
+	err := ts.db.QueryRowx("SELECT * FROM users WHERE id = $1;", ID).
+		StructScan(&t)
+	return &t, err
 }
 
 // GetByKey TODO
