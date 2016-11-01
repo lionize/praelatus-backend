@@ -54,7 +54,11 @@ func (ps *ProjectStore) New(project *models.Project) error {
 	return err
 }
 
-// Save TODO
+// Save updates a Project in the database.
 func (ps *ProjectStore) Save(project *models.Project) error {
-	return nil
+	_, err := ps.db.Exec(`UPDATE projects SET
+	(name, key, github_repo) = ($1, $2, $3) WHERE id = $4`,
+		project.Name, project.Key, project.GithubRepo, project.ID)
+
+	return err
 }
