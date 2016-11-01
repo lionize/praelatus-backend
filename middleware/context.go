@@ -14,7 +14,7 @@ import (
 // methods for accessing request data.
 type Context struct {
 	Val  map[string]interface{}
-	vars map[string]string
+	Vars map[string]string
 	R    *http.Request
 	Err  error
 }
@@ -60,9 +60,9 @@ func (c *Context) String(key string) string {
 
 // Var will return the url variable stored at key
 func (c *Context) Var(key string) string {
-	if c.vars == nil {
-		c.vars = mux.Vars(c.R)
+	if c.Vars == nil {
+		c.Vars = mux.Vars(c.R)
 	}
 
-	return c.vars[key]
+	return c.Vars[key]
 }
