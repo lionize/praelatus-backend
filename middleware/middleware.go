@@ -41,6 +41,13 @@ func (s *Stack) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	statusCode, response := s.Fn(c)
+
+	w.WriteHeader(statusCode)
+	_, err := w.Write(response)
+	if err != nil {
+		log.Error(err)
+	}
+
 	if statusCode >= 300 {
 		log.Errorf("|%s| [%d] %s %s",
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
@@ -49,11 +56,6 @@ func (s *Stack) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
 	}
 
-	w.WriteHeader(statusCode)
-	_, err := w.Write(response)
-	if err != nil {
-		log.Error(err)
-	}
 }
 
 var defaultMw = []Middleware{}
