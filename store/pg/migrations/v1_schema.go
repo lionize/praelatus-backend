@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS teams (
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL PRIMARY KEY,
     name            varchar(250) NOT NULL,
-    project_key     varchar(40) NOT NULL,
+    key				varchar(40) NOT NULL,
     git_repo        varchar(250),
     homepage        varchar(250),
     icon_path       varchar(250),
@@ -54,8 +54,9 @@ CREATE TABLE IF NOT EXISTS workflows (
     project_id integer REFERENCES projects (id)
 );
 
-CREATE TABLE IF NOT EXISTS workflow_transitions (
+CREATE TABLE IF NOT EXISTS transitions (
     id          SERIAL PRIMARY KEY,
+	name		varchar(250),
 
     workflow_id integer REFERENCES workflows (id),
     status_id   integer REFERENCES statuses (id)
