@@ -11,19 +11,47 @@ type ProjectStore struct {
 	db *sqlx.DB
 }
 
-// Get TODO
+// Get gets a project by it's ID in a postgres DB.
 func (ps *ProjectStore) Get(ID int) (*models.Project, error) {
-	return nil, nil
+	var p models.Project
+	err := ps.db.QueryRowx("SELECT * FROM projects id = $1", ID).StructScan(&p)
+	return &p, err
 }
 
-// GetAll TODO
+// GetAll returns all projects
 func (ps *ProjectStore) GetAll() ([]models.Project, error) {
-	return nil, nil
+	var projects []models.Project
+
+	rows, err := ps.db.Queryx(`SELECT * FROM projects;`)
+	if err != nil {
+		return projects, err
+	}
+
+	for rows.Next() {
+		var p models.Project
+
+		err = rows.StructScan(&p)
+		if err != nil {
+			return projects, err
+		}
+
+		projects = append(projects, p)
+	}
+
+	return projects, nil
 }
 
-// New TODO
+// New creates a new Project in the database.
 func (ps *ProjectStore) New(project *models.Project) error {
-	return nil
+	id, err := ps.db.Exec(`INSERT INTO projects VALUES 
+						   (name, key, github_repo) = ($1, $2, $3);`,
+		project.Name, project.Key, project.GithubRepo)
+	if err != nil {
+		return err
+	}
+
+	project.ID, err = id.LastInsertId()
+	return err
 }
 
 // Save TODO
