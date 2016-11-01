@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -25,7 +26,7 @@ var Store store.Store
 // Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
-func BuildRoutes() {
+func Run(port string) {
 	Store = pg.New(os.Getenv("PRAELATUS_DB"))
 
 	BaseRoutes = &Routes{}
@@ -37,4 +38,6 @@ func BuildRoutes() {
 	InitUserRoutes()
 	InitProjectRoutes()
 	InitTicketRoutes()
+
+	http.ListenAndServe(port, BaseRoutes.Root)
 }

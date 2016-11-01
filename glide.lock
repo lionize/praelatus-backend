@@ -10,7 +10,7 @@ imports:
   subpackages:
   - isatty
 - name: github.com/jmoiron/sqlx
-  version: 05b81a7d5d38058e42148dc01f17daf4acba4640
+  version: 5f97679e23f75f42b265fec8d3bdb1c8de90b79d
   subpackages:
   - reflectx
 - name: golang.org/x/crypto
