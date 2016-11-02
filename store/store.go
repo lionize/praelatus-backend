@@ -1,10 +1,14 @@
 package store
 
 import (
-	"database/sql"
+	"errors"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
+)
+
+var (
+	// ErrDuplicateEntry is returned when a primary key constraint is violated.
+	ErrDuplicateEntry = errors.New("Duplicate entry attempted.")
 )
 
 // Store is an interface for storing and retrieving models.
@@ -17,13 +21,6 @@ type Store interface {
 	Statuses() StatusStore
 	Workflows() WorkflowStore
 	Transitions() TransitionStore
-}
-
-// SQLStore is used where you need extra methods for dealing with a sql backend.
-type SQLStore interface {
-	SchemaVersion() int
-	RunExec(string) (sql.Result, error)
-	RunQuery(string) (*sqlx.Rows, error)
 }
 
 // Cache is an abstraction over using Redis or any other caching system.
