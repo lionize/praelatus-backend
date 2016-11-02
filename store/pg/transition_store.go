@@ -21,8 +21,8 @@ func (ts *TransitionStore) Get(ID int) (*models.Transition, error) {
 
 // New will create a new Transition in the postgres DB.
 func (ts *TransitionStore) New(transition *models.Transition) error {
-	id, err := ts.db.Exec(`INSERT INTO transitions VALUES
-						   (name, workflow_id, status_id) = (?, ?, ?)`,
+	id, err := ts.db.Exec(`INSERT INTO transitions (name, workflow_id, status_id) 
+						   VALUES ($1, $2, $3)`,
 		transition.Name, transition.WorkflowID, transition.StatusID)
 	if err != nil {
 		return err

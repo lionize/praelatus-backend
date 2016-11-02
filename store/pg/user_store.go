@@ -69,8 +69,8 @@ func (s *UserStore) Save(u *models.User) error {
 
 // New will create the user in the database
 func (s *UserStore) New(u *models.User) error {
-	id, err := s.db.Exec(`INSERT INTO users VALUES
-		(username, password, email, full_name, is_admin) = (?, ?, ?, ?);`,
+	id, err := s.db.Exec(`INSERT INTO users
+		(username, password, email, full_name, is_admin) VALUES ($1, $2, $3, $4);`,
 		u.Username, u.Password, u.Email, u.FullName, u.IsAdmin)
 	if err != nil {
 		return err

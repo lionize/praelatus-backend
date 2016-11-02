@@ -40,8 +40,7 @@ func (ws *WorkflowStore) GetAll() ([]models.Workflow, error) {
 
 // New creates a new workflow in the database
 func (ws *WorkflowStore) New(workflow *models.Workflow) error {
-	id, err := ws.db.Exec(`INSERT INTO workflows VALUES 
-						   (name, project_id) = ($1, $2)`,
+	id, err := ws.db.Exec(`INSERT INTO workflows  (name, project_id) VALUES ($1, $2)`,
 		workflow.Name, workflow.ProjectID)
 	if err != nil {
 		return err

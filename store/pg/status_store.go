@@ -21,7 +21,7 @@ func (ss *StatusStore) Get(ID int) (*models.Status, error) {
 
 // New creates a new Status in the postgres DB
 func (ss *StatusStore) New(status *models.Status) error {
-	id, err := ss.db.Exec(`INSERT INTO statuses VALUES (name) = ($1);`,
+	id, err := ss.db.Exec(`INSERT INTO statuses (name) VALUES ($1);`,
 		status.Name)
 	if err != nil {
 		return err

@@ -29,8 +29,8 @@ func (t *TeamStore) GetBySlug(slug string) (*models.Team, error) {
 
 // New adds a new team to the database.
 func (t *TeamStore) New(team *models.Team) error {
-	id, err := t.db.Exec(`INSERT INTO teams VALUES 
-	(name, url_slug, icon_url, lead_id) = (?, ?, ?, ?);`,
+	id, err := t.db.Exec(`INSERT INTO teams (name, url_slug, icon_url, lead_id) 
+						  VALUES ($1, $2, $3, $4);`,
 		team.Name, team.URLSlug, team.IconURL, team.LeadID)
 	if err != nil {
 		return err
@@ -43,8 +43,8 @@ func (t *TeamStore) New(team *models.Team) error {
 // Save updates a team to the database.
 func (t *TeamStore) Save(team *models.Team) error {
 	_, err := t.db.Exec(`UPDATE teams SET
-	(name, url_slug, icon_url, lead_id) = (?, ?, ?, ?)
-	WHERE id = ?;`,
+	(name, url_slug, icon_url, lead_id) = ($1, $2, $3, $4)
+	WHERE id = $5;`,
 		team.Name, team.URLSlug, team.IconURL, team.LeadID, team.ID)
 	return err
 }

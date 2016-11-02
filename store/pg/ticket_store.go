@@ -43,7 +43,7 @@ func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 func (ts *TicketStore) Save(ticket *models.Ticket) error {
 	// TODO update fields?
 	_, err := ts.db.Exec(`UPDATE tickets SET 
-		(summary, description) = (?, ?)  WHERE id = ?;`,
+		(summary, description) = ($1, $2) WHERE id = $3;`,
 		ticket.Summary, ticket.Description, ticket.ID)
 	return err
 }
@@ -51,9 +51,9 @@ func (ts *TicketStore) Save(ticket *models.Ticket) error {
 // New will add a new Ticket to the postgres DB
 func (ts *TicketStore) New(ticket *models.Ticket) error {
 	// TODO update fields?
-	id, err := ts.db.Exec(`INSERT INTO tickets VALUES
+	id, err := ts.db.Exec(`INSERT INTO tickets 
 	(summary, description, project_id, assignee_id, reporter_id, 
-	ticket_type_id, status_id) = (?, ?, ?, ?, ?, ?, ?);`,
+	ticket_type_id, status_id) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
 		ticket.Summary, ticket.Description, ticket.ProjectID, ticket.AssigneeID,
 		ticket.ReporterID, ticket.TicketTypeID, ticket.StatusID)
 	if err != nil {

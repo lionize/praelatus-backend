@@ -81,6 +81,28 @@ func (f *FieldStore) GetValue(fieldID, ticketID int) (*models.FieldValue, error)
 	return &fv, err
 }
 
+// AddToProject adds a field to a project's tickets
+func (f *FieldStore) AddToProject(fieldID, projectID int, ticketTypes ...int) error {
+	if ticketTypes != nil {
+		for _, typID := range ticketTypes {
+
+			_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+						(field_id, project_id, ticket_type_id) VALUES ($1, $2, $3);`,
+				fieldID, projectID, typID)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+
+	_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+						(field_id, project_id) VALUES ($1, $2 );`,
+		fieldID, projectID)
+	return err
+}
+
 // Save updates an existing field in the database.
 func (f *FieldStore) Save(field *models.Field) error {
 	_, err := f.db.Exec(`UPDATE fields SET 
