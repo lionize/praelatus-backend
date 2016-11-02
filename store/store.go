@@ -41,7 +41,7 @@ type FieldStore interface {
 	Get(int64) (*models.Field, error)
 	GetAll() ([]models.Field, error)
 	GetByProject(int64) ([]models.Field, error)
-	GetValue(fieldID int, ticketID int64) (*models.FieldValue, error)
+	GetValue(fieldID int64, ticketID int64) (*models.FieldValue, error)
 
 	AddToProject(fieldID, projectID int64, ticketTypes ...int64) error
 

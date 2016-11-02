@@ -42,7 +42,7 @@ func testFields(s store.Store) error {
 			return e
 		}
 
-		e = s.Fields().AddToProject(1)
+		e = s.Fields().AddToProject(1, f.ID)
 		if e != nil && e != store.ErrDuplicateEntry {
 			return e
 		}
