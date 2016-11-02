@@ -2,9 +2,11 @@ package pg
 
 import (
 	"database/sql"
+	"fmt"
 
 	log "github.com/iamthemuffinman/logsip"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg/migrations"
 )
@@ -108,10 +110,27 @@ func (pg *Store) Connection() *sql.DB {
 
 // toPqErr converts an error to a pq.Error so we can access more info about what
 // happened.
-// func toPqErr(e error) *pq.Error {
-// 	if err, ok := e.(pq.Error); ok {
-// 		return &err
-// 	}
+func toPqErr(e error) *pq.Error {
+	if err, ok := e.(*pq.Error); ok {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
+
+func handlePqErr(e error) error {
+	pqe := toPqErr(e)
+	if pqe == nil {
+		fmt.Println("Failed to convert to pqErr")
+		return e
+	}
+
+	log.Error(e)
+
+	// fmt.Println("PQ ERROR CODE:", pqe.Code)
+	if pqe.Code == "23505" {
+		return store.ErrDuplicateEntry
+	}
+
+	return e
+}
