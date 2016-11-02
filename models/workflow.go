@@ -1,7 +1,11 @@
 package models
 
 // Workflow is the container for issues and keeps track of available transitions
-type Workflow struct{}
+type Workflow struct {
+	ID        int64  `json:"id"`
+	Name      string `json:"name"`
+	ProjectID int64  `json:"-" db:"project_id"`
+}
 
 // Transition contains information about what hooks to perform when performing
 // a transition
