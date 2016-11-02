@@ -18,7 +18,7 @@ type User struct {
 	Email      string `json:"email" db:"email"`
 	FullName   string `json:"full_name" db:"full_name"`
 	Gravatar   string `json:"gravatar" db:"gravatar"`
-	ProfilePic string `json:"profile_pic" db:"profile_pic"`
+	ProfilePic string `json:"profile_picture" db:"profile_picture"`
 	IsAdmin    bool   `json:"is_admin,omitempty" db:"is_admin"`
 }
 
