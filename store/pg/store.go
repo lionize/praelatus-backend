@@ -18,6 +18,7 @@ type Store struct {
 	fields      *FieldStore
 	workflows   *WorkflowStore
 	tickets     *TicketStore
+	labels      *LabelStore
 	transitions *TransitionStore
 	statuses    *StatusStore
 	teams       *TeamStore
@@ -40,13 +41,14 @@ func New(conn string, replicas ...string) store.Store {
 		projects:    &ProjectStore{d},
 		fields:      &FieldStore{d},
 		tickets:     &TicketStore{d},
+		labels:      &LabelStore{d},
 		workflows:   &WorkflowStore{d},
 		transitions: &TransitionStore{d},
 		statuses:    &StatusStore{d},
 		teams:       &TeamStore{d},
 	}
 
-	err = migrations.RunMigration(s)
+	err = migrations.RunMigrations(s)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -87,6 +89,11 @@ func (pg *Store) Statuses() store.StatusStore {
 // Workflows returns the underlying WorkflowStore for a postgres DB
 func (pg *Store) Workflows() store.WorkflowStore {
 	return pg.workflows
+}
+
+// Labels returns the underlying LabelStore for a postgres DB
+func (pg *Store) Labels() store.LabelStore {
+	return pg.labels
 }
 
 // Transitions returns the underlying TransitionStore for a postgres DB

@@ -11,17 +11,33 @@ type TransitionStore struct {
 	db *sqlx.DB
 }
 
-// Get TODO
+// Get gets a transition by it's ID from a postgres DB.
 func (ts *TransitionStore) Get(ID int) (*models.Transition, error) {
-	return nil, nil
+	var s models.Transition
+	err := ts.db.QueryRowx("SELECT * FROM transitions WHERE id = $1", ID).
+		StructScan(&s)
+	return &s, err
 }
 
-// New TODO
+// New will create a new Transition in the postgres DB.
 func (ts *TransitionStore) New(transition *models.Transition) error {
-	return nil
+	id, err := ts.db.Exec(`INSERT INTO transitions VALUES
+						   (name, workflow_id, status_id) = (?, ?, ?)`,
+		transition.Name, transition.WorkflowID, transition.StatusID)
+	if err != nil {
+		return err
+	}
+
+	transition.ID, err = id.LastInsertId()
+	return err
 }
 
-// Save TODO
+// Save update an existing Transition in the postgres DB.
 func (ts *TransitionStore) Save(transition *models.Transition) error {
-	return nil
+	_, err := ts.db.Exec(`UPDATE transitions SET
+						  (name, workflow_id, status_id) = ($1, $2, $3)
+						  WHERE id = $4`,
+		transition.Name, transition.WorkflowID,
+		transition.StatusID, transition.ID)
+	return err
 }

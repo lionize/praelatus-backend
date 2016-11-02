@@ -57,9 +57,9 @@ func UpdateTicket(c *mw.Context) (int, []byte) {
 func GetTicket(c *mw.Context) (int, []byte) {
 	key := c.Var("key")
 	pkey := c.Var("pkey")
-	team_slug := c.Var("team_slug")
+	teamSlug := c.Var("team_slug")
 
-	t, err := Store.Tickets().Get(team_slug, pkey, key)
+	t, err := Store.Tickets().GetByKey(teamSlug, pkey, key)
 	if err != nil {
 		return http.StatusNotFound, []byte(err.Error())
 	}

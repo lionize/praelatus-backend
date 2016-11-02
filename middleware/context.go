@@ -14,7 +14,7 @@ import (
 // methods for accessing request data.
 type Context struct {
 	Val  map[string]interface{}
-	vars map[string]string
+	Vars map[string]string
 	R    *http.Request
 	Err  error
 }
@@ -22,7 +22,8 @@ type Context struct {
 // CurrentUser will return the current user for this Context else will return
 // nil
 func (c *Context) CurrentUser() *models.User {
-	if u, ok := c.Val["CurrentUser"].(*models.User); ok {
+	u, ok := c.Val["CurrentUser"].(*models.User)
+	if ok {
 		return u
 	}
 
@@ -44,19 +45,20 @@ func (c *Context) JSON(m interface{}) error {
 // String will return the context value at key as a string if possible,
 // returns "" if an error occurs.
 func (c *Context) String(key string) string {
-	if v, ok := c.Val[key].(string); ok {
+	v, ok := c.Val[key].(string)
+	if ok {
 		return v
 	}
 
-	log.Errorf("Failed to retrieve string value at: %s Actual value: %v\n", key, v)
+	log.Errorf("Failed to retrieve string value at: %s Actual value: %v\n", key, c.Val[key])
 	return ""
 }
 
 // Var will return the url variable stored at key
 func (c *Context) Var(key string) string {
-	if c.vars == nil {
-		c.vars = mux.Vars(c.R)
+	if c.Vars == nil {
+		c.Vars = mux.Vars(c.R)
 	}
 
-	return c.vars[key]
+	return c.Vars[key]
 }

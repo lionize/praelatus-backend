@@ -25,15 +25,15 @@ CREATE TABLE IF NOT EXISTS teams (
     name         varchar(40) NOT NULL,
     url_slug     varchar(80) NOT NULL,
     homepage     varchar(250),
-    icon_path    varchar(250),
+    icon_url     varchar(250),
 
-    team_lead_id integer REFERENCES users (id)
+    lead_id integer REFERENCES users (id)
 );
 
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL PRIMARY KEY,
     name            varchar(250) NOT NULL,
-    project_key     varchar(40) NOT NULL,
+    key				varchar(40) NOT NULL,
     git_repo        varchar(250),
     homepage        varchar(250),
     icon_path       varchar(250),
@@ -54,8 +54,9 @@ CREATE TABLE IF NOT EXISTS workflows (
     project_id integer REFERENCES projects (id)
 );
 
-CREATE TABLE IF NOT EXISTS workflow_transitions (
+CREATE TABLE IF NOT EXISTS transitions (
     id          SERIAL PRIMARY KEY,
+	name		varchar(250),
 
     workflow_id integer REFERENCES workflows (id),
     status_id   integer REFERENCES statuses (id)
@@ -66,20 +67,18 @@ CREATE TABLE transitions_to_statuses (
     status_id     integer
 );
 
-CREATE TYPE method AS ENUM('EMAIL', 'POST', 'PUT', 'GET', 'DELETE');
 CREATE TABLE IF NOT EXISTS hooks (
     id            SERIAL PRIMARY KEY,
     body          text,
-    delivery      method,
+    delivery      varchar(20),
 
     transition_id integer REFERENCES workflow_transitions
 );
 
-CREATE TYPE data_types AS ENUM ('FLOAT', 'STRING', 'INT', 'DATE');
 CREATE TABLE IF NOT EXISTS fields (
     id        SERIAL PRIMARY KEY,
     name      varchar(250),
-    data_type data_types
+    data_type varchar(6)
 );
 
 CREATE TABLE IF NOT EXISTS ticket_types (
@@ -92,15 +91,15 @@ CREATE TABLE IF NOT EXISTS tickets (
     id           SERIAL PRIMARY KEY,
 	updated_date timestamp,
 	created_date timestamp DEFAULT current_timestamp,
-    ticket_key   varchar(250) NOT NULL,
+    key          varchar(250) NOT NULL,
     summary      varchar(250) NOT NULL,
     description  text NOT NULL,
 
-    project_id     integer REFERENCES projects (id),
+    project_id     integer REFERENCES projects (id) NOT NULL,
     assignee_id    integer REFERENCES users (id),
-    reporter_id    integer REFERENCES users (id),
-    ticket_type_id integer REFERENCES ticket_types (id),
-    status_id      integer REFERENCES status (id)
+    reporter_id    integer REFERENCES users (id) NOT NULL,
+    ticket_type_id integer REFERENCES ticket_types (id) NOT NULL,
+    status_id      integer REFERENCES status (id) NOT NULL
 );
 
 CREATE TRIGGER update_ticket_updated_date BEFORE 
@@ -125,5 +124,34 @@ CREATE TABLE IF NOT EXISTS field_tickettype_project (
 
 CREATE TABLE IF NOT EXISTS database_information (
 	schema_version integer	
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+	id SERIAL PRIMARY KEY,
+	body text,
+	author_id integer REFERENCES users (id),
+	ticket_id integer REFERENCES tickets (id)
+);
+
+CREATE TABLE IF NOT EXISTS labels (
+	id SERIAL PRIMARY KEY,
+	name varchar(255),
+);
+
+CREATE TABLE IF NOT EXISTS labels_tickets (
+	label_id integer REFERENCES labels (id),
+	ticket_id integer REFERENCES tickets (id),
+	PRIMARY KEY(label_id, ticket_id)
+);
+
+CREATE TABLE IF NOT EXISTS permissions (
+	id			 SERIAL PRIMARY KEY,
+	updated_date timestamp,
+	created_date timestamp DEFAULT current_timestamp,
+	level		 varchar(50),
+
+	project_id	 integer REFERENCES projects (id),
+	team_id		 integer REFERENCES teams(id),
+	user_id		 integer REFERENCES users (id) NOT NULL
 );
 `

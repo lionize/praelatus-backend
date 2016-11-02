@@ -12,9 +12,9 @@ func checkMigration(e error) {
 	}
 }
 
-// RunMigration will run all database migrations depending on the version
+// RunMigrations will run all database migrations depending on the version
 // returned from the database_information table.
-func RunMigration(s store.SQLStore) error {
+func RunMigrations(s store.SQLStore) error {
 	version := 0
 
 	rws, err := s.RunQuery("SELECT schema_version FROM database_information;")
@@ -22,6 +22,8 @@ func RunMigration(s store.SQLStore) error {
 		rws.Scan(&version)
 	}
 
+	// TODO revisit this to make it a little cleaner (i.e. not infinite if
+	// statements)
 	if version < v1 {
 		_, err = s.RunQuery(v1Schema)
 		checkMigration(err)
