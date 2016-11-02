@@ -43,6 +43,8 @@ type FieldStore interface {
 	GetByProject(int) ([]models.Field, error)
 	GetValue(fieldID int, ticketID int) (*models.FieldValue, error)
 
+	AddToProject(projectID int, ticketTypes ...int) error
+
 	New(*models.Field) error
 	Save(*models.Field) error
 }
