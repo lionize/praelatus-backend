@@ -24,7 +24,9 @@ func (f *FieldStore) Get(id int) (*models.Field, error) {
 func (f *FieldStore) GetByProject(projectID int) ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Queryx("SELECT * FROM fields_projects WHERE project_id = $1", projectID)
+	rows, err := f.db.Queryx(
+		"SELECT * FROM fields_projects WHERE project_id = $1",
+		projectID)
 	if err != nil {
 		return fields, err
 	}
@@ -67,7 +69,7 @@ func (f *FieldStore) GetAll() ([]models.Field, error) {
 }
 
 // GetValue gets a field value from the database based on field and ticket ID.
-func (f *FieldStore) GetValue(fieldID int, ticketID int) (*models.FieldValue, error) {
+func (f *FieldStore) GetValue(fieldID, ticketID int) (*models.FieldValue, error) {
 	var fv models.FieldValue
 
 	err := f.db.QueryRowx(`SELECT * FROM field_values 
