@@ -48,7 +48,7 @@ func (ps *ProjectStore) New(project *models.Project) error {
 						   VALUES ($1, $2, $3);`,
 		project.Name, project.Key, project.GithubRepo)
 	if err != nil {
-		return err
+		return handlePqErr(err)
 	}
 
 	project.ID, err = id.LastInsertId()

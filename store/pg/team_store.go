@@ -33,7 +33,7 @@ func (t *TeamStore) New(team *models.Team) error {
 						  VALUES ($1, $2, $3, $4);`,
 		team.Name, team.URLSlug, team.IconURL, team.LeadID)
 	if err != nil {
-		return err
+		return handlePqErr(err)
 	}
 
 	team.ID, err = id.LastInsertId()

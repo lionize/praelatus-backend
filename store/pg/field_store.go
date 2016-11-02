@@ -114,11 +114,10 @@ func (f *FieldStore) Save(field *models.Field) error {
 
 // New creates a new Field in the database.
 func (f *FieldStore) New(field *models.Field) error {
-	id, err := f.db.Exec(`INSERT INTO projects VALUES
-					     (name, data_type) = ($1, $2);`,
+	id, err := f.db.Exec(`INSERT INTO fields (name, data_type) VALUES ($1, $2);`,
 		field.Name, field.DataType)
 	if err != nil {
-		return err
+		return handlePqErr(err)
 	}
 
 	field.ID, err = id.LastInsertId()
