@@ -100,7 +100,12 @@ func (pg *Store) Transitions() store.TransitionStore {
 	return pg.transitions
 }
 
-// Convert an error to a pq.Error so we can access more info about what
+// Connection implementes store.SQLStore for postgres db
+func (pg *Store) Connection() *sqlx.DB {
+	return pg.db
+}
+
+// toPqErr converts an error to a pq.Error so we can access more info about what
 // happened.
 func toPqErr(e error) *pq.Error {
 	if err, ok := e.(pq.Error); ok {
