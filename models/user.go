@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	log "github.com/iamthemuffinman/logsip"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,6 +20,18 @@ type User struct {
 	Gravatar   string `json:"gravatar" db:"gravatar"`
 	ProfilePic string `json:"profile_pic" db:"profile_pic"`
 	IsAdmin    bool   `json:"is_admin,omitempty" db:"is_admin"`
+}
+
+// CheckPw will verify if the given password matches for this user. Logs any
+// errors it encounters
+func (u *User) CheckPw(pw []byte) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), pw)
+	if err == nil {
+		return true
+	}
+
+	log.Error(err)
+	return false
 }
 
 func (u *User) String() string {
