@@ -3,17 +3,19 @@ package pg
 import (
 	"testing"
 
+	_ "github.com/lib/pq"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/store"
+	"github.com/praelatus/backend/store/pg"
 )
 
 func testStore() store.Store {
-	return New("postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable")
+	return pg.New("postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable")
 }
 
 func failIfErr(t *testing.T, e error) {
 	if e != nil {
-		t.Error(e)
+		t.Error("Test failed with error: ", e)
 	}
 }
 
