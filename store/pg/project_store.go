@@ -14,7 +14,8 @@ type ProjectStore struct {
 // Get gets a project by it's ID in a postgres DB.
 func (ps *ProjectStore) Get(ID int) (*models.Project, error) {
 	var p models.Project
-	err := ps.db.QueryRowx("SELECT * FROM projects id = $1", ID).StructScan(&p)
+	err := ps.db.QueryRowx("SELECT * FROM projects WHERE id = $1;", ID).
+		StructScan(&p)
 	return &p, err
 }
 
@@ -57,7 +58,7 @@ func (ps *ProjectStore) New(project *models.Project) error {
 // Save updates a Project in the database.
 func (ps *ProjectStore) Save(project *models.Project) error {
 	_, err := ps.db.Exec(`UPDATE projects SET
-	(name, key, github_repo) = ($1, $2, $3) WHERE id = $4`,
+	(name, key, github_repo) = ($1, $2, $3) WHERE id = $4;`,
 		project.Name, project.Key, project.GithubRepo, project.ID)
 
 	return err
