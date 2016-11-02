@@ -11,46 +11,6 @@ func testStore() store.Store {
 	return New("postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable")
 }
 
-func testFields(s store.Store) error {
-	pe := testProjects(s)
-	if pe != nil {
-		return pe
-	}
-
-	fields := []models.Field{
-		models.Field{
-			Name:     "TestField1",
-			DataType: "STRING",
-		},
-		models.Field{
-			Name:     "TestField2",
-			DataType: "FLOAT",
-		},
-		models.Field{
-			Name:     "TestField3",
-			DataType: "INT",
-		},
-		models.Field{
-			Name:     "TestField4",
-			DataType: "DATE",
-		},
-	}
-
-	for _, f := range fields {
-		e := s.Fields().New(&f)
-		if e != nil && e != store.ErrDuplicateEntry {
-			return e
-		}
-
-		e = s.Fields().AddToProject(1, f.ID)
-		if e != nil && e != store.ErrDuplicateEntry {
-			return e
-		}
-	}
-
-	return nil
-}
-
 func failIfErr(t *testing.T, e error) {
 	if e != nil {
 		t.Error(e)
@@ -59,7 +19,7 @@ func failIfErr(t *testing.T, e error) {
 
 func TestGet(t *testing.T) {
 	s := testStore()
-	err := testFields(s)
+	err := store.SeedFields(s)
 	failIfErr(t, err)
 
 	f, e := s.Fields().Get(1)
@@ -72,7 +32,7 @@ func TestGet(t *testing.T) {
 
 func TestGetAll(t *testing.T) {
 	s := testStore()
-	err := testFields(s)
+	err := store.SeedFields(s)
 	failIfErr(t, err)
 
 	f, e := s.Fields().GetAll()
@@ -89,7 +49,7 @@ func TestGetAll(t *testing.T) {
 
 func TestGetByProject(t *testing.T) {
 	s := testStore()
-	err := testFields(s)
+	err := store.SeedFields(s)
 	failIfErr(t, err)
 
 	f, e := s.Fields().GetByProject(1)
@@ -110,7 +70,7 @@ func TestGetValue(t *testing.T) {
 
 func TestAddToProject(t *testing.T) {
 	s := testStore()
-	e := testTicketTypes(s)
+	e := store.SeedTicketTypes(s)
 	failIfErr(t, e)
 
 	f, e := models.NewField("Project Field 1", "STRING")
