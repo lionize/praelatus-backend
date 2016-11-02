@@ -1,6 +1,8 @@
 package pg
 
 import (
+	"database/sql"
+
 	log "github.com/iamthemuffinman/logsip"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
@@ -101,8 +103,8 @@ func (pg *Store) Transitions() store.TransitionStore {
 }
 
 // Connection implementes store.SQLStore for postgres db
-func (pg *Store) Connection() *sqlx.DB {
-	return pg.db
+func (pg *Store) Connection() *sql.DB {
+	return pg.db.DB
 }
 
 // toPqErr converts an error to a pq.Error so we can access more info about what
