@@ -38,12 +38,12 @@ type Cache interface {
 
 // FieldStore contains methods for storing and retrieving Fields and FieldValues
 type FieldStore interface {
-	Get(int) (*models.Field, error)
+	Get(int64) (*models.Field, error)
 	GetAll() ([]models.Field, error)
-	GetByProject(int) ([]models.Field, error)
-	GetValue(fieldID int, ticketID int) (*models.FieldValue, error)
+	GetByProject(int64) ([]models.Field, error)
+	GetValue(fieldID int, ticketID int64) (*models.FieldValue, error)
 
-	AddToProject(projectID int, ticketTypes ...int) error
+	AddToProject(fieldID, projectID int64, ticketTypes ...int64) error
 
 	New(*models.Field) error
 	Save(*models.Field) error
@@ -51,7 +51,7 @@ type FieldStore interface {
 
 // UserStore contains methods for storing and retrieving Users
 type UserStore interface {
-	Get(int) (*models.User, error)
+	Get(int64) (*models.User, error)
 	GetByUsername(string) (*models.User, error)
 	GetAll() ([]models.User, error)
 
@@ -61,7 +61,7 @@ type UserStore interface {
 
 // ProjectStore contains methods for storing and retrieving Projects
 type ProjectStore interface {
-	Get(int) (*models.Project, error)
+	Get(int64) (*models.Project, error)
 	GetAll() ([]models.Project, error)
 
 	New(*models.Project) error
@@ -70,8 +70,10 @@ type ProjectStore interface {
 
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
-	Get(int) (*models.Ticket, error)
+	Get(int64) (*models.Ticket, error)
 	GetByKey(teamSlug string, projectKey string, ticketKey string) (*models.Ticket, error)
+
+	NewType(*models.TicketType) error
 
 	New(*models.Ticket) error
 	Save(*models.Ticket) error
@@ -79,7 +81,7 @@ type TicketStore interface {
 
 // TeamStore contains methods for storing and retrieving Teams
 type TeamStore interface {
-	Get(int) (*models.Team, error)
+	Get(int64) (*models.Team, error)
 	GetBySlug(string) (*models.Team, error)
 
 	New(*models.Team) error
@@ -88,7 +90,7 @@ type TeamStore interface {
 
 // StatusStore contains methods for storing and retrieving Statuses
 type StatusStore interface {
-	Get(int) (*models.Status, error)
+	Get(int64) (*models.Status, error)
 
 	New(*models.Status) error
 	Save(*models.Status) error
@@ -96,7 +98,7 @@ type StatusStore interface {
 
 // WorkflowStore contains methods for storing and retrieving Workflows
 type WorkflowStore interface {
-	Get(int) (*models.Workflow, error)
+	Get(int64) (*models.Workflow, error)
 
 	New(*models.Workflow) error
 	Save(*models.Workflow) error
@@ -104,7 +106,7 @@ type WorkflowStore interface {
 
 // TransitionStore contains methods for storing and retrieving Transitions
 type TransitionStore interface {
-	Get(int) (*models.Transition, error)
+	Get(int64) (*models.Transition, error)
 
 	New(*models.Transition) error
 	Save(*models.Transition) error
@@ -112,7 +114,7 @@ type TransitionStore interface {
 
 // LabelStore contains methods for storing and retrieving Labels
 type LabelStore interface {
-	Get(int) (*models.Label, error)
+	Get(int64) (*models.Label, error)
 	GetAll() ([]models.Label, error)
 
 	New(*models.Label) error
