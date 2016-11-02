@@ -1,6 +1,6 @@
 package migrations
 
-const v1Schema = `
+const v1body = `
 CREATE OR REPLACE FUNCTION update_date()	
 RETURNS TRIGGER AS $$
 BEGIN
@@ -62,9 +62,9 @@ CREATE TABLE IF NOT EXISTS transitions (
     status_id   integer REFERENCES statuses (id)
 );
 
-CREATE TABLE transitions_to_statuses (
-    transition_id integer,
-    status_id     integer
+CREATE TABLE IF NOT EXISTS transitions_to_statuses (
+    transition_id integer REFERENCES transitions (id),
+    status_id     integer REFERENCES statuses (id)
 );
 
 CREATE TABLE IF NOT EXISTS hooks (
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS hooks (
     body          text,
     delivery      varchar(20),
 
-    transition_id integer REFERENCES workflow_transitions
+    transition_id integer REFERENCES transitions (id)
 );
 
 CREATE TABLE IF NOT EXISTS fields (
@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     assignee_id    integer REFERENCES users (id),
     reporter_id    integer REFERENCES users (id) NOT NULL,
     ticket_type_id integer REFERENCES ticket_types (id) NOT NULL,
-    status_id      integer REFERENCES status (id) NOT NULL
+    status_id      integer REFERENCES statuses (id) NOT NULL
 );
 
 CREATE TRIGGER update_ticket_updated_date BEFORE 
@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS field_tickettype_project (
 
     field_id       integer REFERENCES fields (id),
     ticket_type_id integer REFERENCES ticket_types (id),
-    project_id     integer REFERENCES projects (id),
+    project_id     integer REFERENCES projects (id)
 );
 
 CREATE TABLE IF NOT EXISTS database_information (
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS comments (
 
 CREATE TABLE IF NOT EXISTS labels (
 	id SERIAL PRIMARY KEY,
-	name varchar(255),
+	name varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS labels_tickets (
@@ -155,3 +155,5 @@ CREATE TABLE IF NOT EXISTS permissions (
 	user_id		 integer REFERENCES users (id) NOT NULL
 );
 `
+
+var v1schema = schema{1, v1body}
