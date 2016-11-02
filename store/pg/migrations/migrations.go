@@ -2,34 +2,35 @@ package migrations
 
 import "github.com/praelatus/backend/store"
 
-const (
-	v1 = iota
-)
+type schema struct {
+	v int
+	q string
+}
 
-func checkMigration(e error) {
-	if e != nil {
-		panic(e)
-	}
+var schemas = []schema{
+	v1schema,
 }
 
 // RunMigrations will run all database migrations depending on the version
 // returned from the database_information table.
 func RunMigrations(s store.SQLStore) error {
-	version := 0
+	for _, schema := range schemas {
+		version := s.SchemaVersion()
 
-	rws, err := s.RunQuery("SELECT schema_version FROM database_information;")
-	if err == nil {
-		rws.Scan(&version)
+		if version < schema.v {
+			_, err := s.RunExec(schema.q)
+			if err != nil {
+				return err
+			}
+
+			_, err = s.RunExec(`INSERT INTO database_information 
+								VALUES (schema_version) = 
+								(` + string(schema.v) + `);`)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	// TODO revisit this to make it a little cleaner (i.e. not infinite if
-	// statements)
-	if version < v1 {
-		_, err = s.RunQuery(v1Schema)
-		checkMigration(err)
-		_, err = s.RunQuery("INSERT INTO database_information VALUES (" + string(v1) + ")")
-		checkMigration(err)
-	}
-
-	return err
+	return nil
 }
