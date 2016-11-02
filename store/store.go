@@ -3,6 +3,7 @@ package store
 import (
 	"errors"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
 
@@ -21,6 +22,12 @@ type Store interface {
 	Statuses() StatusStore
 	Workflows() WorkflowStore
 	Transitions() TransitionStore
+}
+
+// SQLStore is an interface for a sql store so we can request direct
+// access to the database.
+type SQLStore interface {
+	Connection() *sqlx.DB
 }
 
 // Cache is an abstraction over using Redis or any other caching system.
