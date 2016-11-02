@@ -11,17 +11,51 @@ type WorkflowStore struct {
 	db *sqlx.DB
 }
 
-// Get TODO
+// Get gets a workflow from the database by it's ID
 func (ws *WorkflowStore) Get(ID int) (*models.Workflow, error) {
-	return nil, nil
+	var w models.Workflow
+	err := ws.db.QueryRowx("SELECT * FROM workflows WHERE id = $1;", ID).
+		StructScan(&w)
+	return &w, err
 }
 
-// New TODO
+// GetAll gets all the workflows from the database
+func (ws *WorkflowStore) GetAll() ([]models.Workflow, error) {
+	var workflows []models.Workflow
+	rows, err := ws.db.Queryx("SELECT * FROM workflows;")
+
+	for rows.Next() {
+		var w models.Workflow
+
+		err := rows.Scan(&w)
+		if err != nil {
+			return workflows, err
+		}
+
+		workflows = append(workflows, w)
+	}
+
+	return workflows, err
+}
+
+// New creates a new workflow in the database
 func (ws *WorkflowStore) New(workflow *models.Workflow) error {
-	return nil
+	id, err := ws.db.Exec(`INSERT INTO workflows VALUES 
+						   (name, project_id) = ($1, $2)`,
+		workflow.Name, workflow.ProjectID)
+	if err != nil {
+		return err
+	}
+
+	workflow.ID, err = id.LastInsertId()
+	return err
 }
 
-// Save TODO
+// Save updates a workflow in the database
 func (ws *WorkflowStore) Save(workflow *models.Workflow) error {
-	return nil
+	_, err := ws.db.Exec(`UPDATE workflows SET 
+						  (name, project_id) = ($1, $2)`,
+		workflow.Name, workflow.ProjectID)
+
+	return err
 }
