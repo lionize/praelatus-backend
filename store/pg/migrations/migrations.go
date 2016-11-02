@@ -4,7 +4,6 @@ import "github.com/praelatus/backend/store"
 
 const (
 	v1 = iota
-	v2
 )
 
 func checkMigration(e error) {
@@ -29,13 +28,6 @@ func RunMigrations(s store.SQLStore) error {
 		_, err = s.RunQuery(v1Schema)
 		checkMigration(err)
 		_, err = s.RunQuery("INSERT INTO database_information VALUES (" + string(v1) + ")")
-		checkMigration(err)
-	}
-
-	if version < v2 {
-		_, err = s.RunQuery(v2Schema)
-		checkMigration(err)
-		_, err = s.RunQuery("INSERT INTO database_information VALUES (" + string(v2) + ")")
 		checkMigration(err)
 	}
 
