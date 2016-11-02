@@ -12,7 +12,7 @@ type TicketStore struct {
 }
 
 // Get gets a Ticket from a postgres DB by it's ID
-func (ts *TicketStore) Get(ID int) (*models.Ticket, error) {
+func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := ts.db.QueryRowx("SELECT * FROM tickets WHERE id = $1;", ID).
 		StructScan(&t)
@@ -61,5 +61,17 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 	}
 
 	ticket.ID, err = id.LastInsertId()
+	return err
+}
+
+// NewType will add a new TicketType to the postgres DB
+func (ts *TicketStore) NewType(tt *models.TicketType) error {
+	id, err := ts.db.Exec(`INSERT INTO ticket_types (name) VALUES ($1);`,
+		tt.Name)
+	if err != nil {
+		return err
+	}
+
+	tt.ID, err = id.LastInsertId()
 	return err
 }

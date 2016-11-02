@@ -12,7 +12,7 @@ type WorkflowStore struct {
 }
 
 // Get gets a workflow from the database by it's ID
-func (ws *WorkflowStore) Get(ID int) (*models.Workflow, error) {
+func (ws *WorkflowStore) Get(ID int64) (*models.Workflow, error) {
 	var w models.Workflow
 	err := ws.db.QueryRowx("SELECT * FROM workflows WHERE id = $1;", ID).
 		StructScan(&w)

@@ -12,9 +12,9 @@ type UserStore struct {
 }
 
 // Get retrieves the user by row id
-func (s *UserStore) Get(id int) (*models.User, error) {
+func (s *UserStore) Get(ID int64) (*models.User, error) {
 	var u models.User
-	err := s.db.QueryRowx("SELECT * FROM users WHERE id = $1;", id).
+	err := s.db.QueryRowx("SELECT * FROM users WHERE id = $1;", ID).
 		StructScan(&u)
 	return &u, err
 }

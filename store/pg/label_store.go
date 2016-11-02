@@ -12,7 +12,7 @@ type LabelStore struct {
 }
 
 // Get gets a label from the database by it's ID
-func (ls *LabelStore) Get(ID int) (*models.Label, error) {
+func (ls *LabelStore) Get(ID int64) (*models.Label, error) {
 	var l models.Label
 	err := ls.db.QueryRowx("SELECT * FROM labels WHERE id = $1", ID).
 		StructScan(&l)

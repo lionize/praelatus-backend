@@ -12,7 +12,7 @@ type FieldStore struct {
 }
 
 // Get retrieves a models.Field by ID
-func (f *FieldStore) Get(id int) (*models.Field, error) {
+func (f *FieldStore) Get(id int64) (*models.Field, error) {
 	var field models.Field
 	err := f.db.QueryRowx("SELECT * FROM fields WHERE id = $1;", id).
 		StructScan(&field)
@@ -21,7 +21,7 @@ func (f *FieldStore) Get(id int) (*models.Field, error) {
 
 // GetByProject retrieves all Fields associated with a project by the project's
 // ID
-func (f *FieldStore) GetByProject(projectID int) ([]models.Field, error) {
+func (f *FieldStore) GetByProject(projectID int64) ([]models.Field, error) {
 	var fields []models.Field
 
 	rows, err := f.db.Queryx(
@@ -69,7 +69,7 @@ func (f *FieldStore) GetAll() ([]models.Field, error) {
 }
 
 // GetValue gets a field value from the database based on field and ticket ID.
-func (f *FieldStore) GetValue(fieldID, ticketID int) (*models.FieldValue, error) {
+func (f *FieldStore) GetValue(fieldID, ticketID int64) (*models.FieldValue, error) {
 	var fv models.FieldValue
 
 	err := f.db.QueryRowx(`SELECT * FROM field_values 
@@ -82,7 +82,7 @@ func (f *FieldStore) GetValue(fieldID, ticketID int) (*models.FieldValue, error)
 }
 
 // AddToProject adds a field to a project's tickets
-func (f *FieldStore) AddToProject(fieldID, projectID int, ticketTypes ...int) error {
+func (f *FieldStore) AddToProject(fieldID, projectID int64, ticketTypes ...int64) error {
 	if ticketTypes != nil {
 		for _, typID := range ticketTypes {
 

@@ -12,7 +12,7 @@ type StatusStore struct {
 }
 
 // Get gets a Status by it's ID in a postgres DB
-func (ss *StatusStore) Get(ID int) (*models.Status, error) {
+func (ss *StatusStore) Get(ID int64) (*models.Status, error) {
 	var s models.Status
 	err := ss.db.QueryRowx("SELECT * FROM statuses WHERE id = $1;", ID).
 		StructScan(&s)

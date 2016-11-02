@@ -12,7 +12,7 @@ type TransitionStore struct {
 }
 
 // Get gets a transition by it's ID from a postgres DB.
-func (ts *TransitionStore) Get(ID int) (*models.Transition, error) {
+func (ts *TransitionStore) Get(ID int64) (*models.Transition, error) {
 	var s models.Transition
 	err := ts.db.QueryRowx("SELECT * FROM transitions WHERE id = $1", ID).
 		StructScan(&s)

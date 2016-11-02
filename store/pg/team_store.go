@@ -12,7 +12,7 @@ type TeamStore struct {
 }
 
 // Get retrieves a team from the database based on ID
-func (t *TeamStore) Get(ID int) (*models.Team, error) {
+func (t *TeamStore) Get(ID int64) (*models.Team, error) {
 	var team models.Team
 	err := t.db.QueryRowx("SELECT * FROM teams WHERE id = $1;", ID).
 		StructScan(&team)

@@ -12,7 +12,7 @@ type ProjectStore struct {
 }
 
 // Get gets a project by it's ID in a postgres DB.
-func (ps *ProjectStore) Get(ID int) (*models.Project, error) {
+func (ps *ProjectStore) Get(ID int64) (*models.Project, error) {
 	var p models.Project
 	err := ps.db.QueryRowx("SELECT * FROM projects WHERE id = $1;", ID).
 		StructScan(&p)
