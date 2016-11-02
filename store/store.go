@@ -103,3 +103,12 @@ type TransitionStore interface {
 	New(*models.Transition) error
 	Save(*models.Transition) error
 }
+
+// LabelStore contains methods for storing and retrieving Labels
+type LabelStore interface {
+	Get(int) (*models.Label, error)
+	GetAll() ([]models.Label, error)
+
+	New(*models.Label) error
+	Save(*models.Label) error
+}
