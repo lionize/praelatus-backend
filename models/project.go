@@ -3,32 +3,32 @@ package models
 import "time"
 
 // PermissionLevel represents a permission level.
-type PermissionLevel int
+type PermissionLevel string
 
 // Permission Levels
 const (
-	ADMIN PermissionLevel = iota
-	MEMBER
+	AdminR = "ADMIN"
+	CoreR  = "CORE"
+	UserR  = "USER"
 )
 
 // Project is the model used to represent a project in Tessera
 type Project struct {
-	ID         int64        `json:"id"`
-	CreatedAt  time.Time    `json:"createdAt"`
-	UpdatedAt  time.Time    `json:"updatedAt"`
-	Name       string       `json:"name"`
-	Key        string       `json:"key"`
-	GithubRepo string       `json:"github_repo,omitempty"`
-	Members    []Membership `json:"members,omitempty"`
-	Tickets    []Ticket     `json:"tickets,omitempty"`
+	ID          int64     `json:"id" db:"id"`
+	CreatedDate time.Time `json:"created_date" db:"created_date"`
+	UpdatedDate time.Time `json:"updated_date" db:"updated_date"`
+	Name        string    `json:"name" db:"name"`
+	Key         string    `json:"key" db:"key"`
+	GithubRepo  string    `json:"github_repo,omitempty" db:"github_repo"`
 }
 
-// Membership is used to connect users with their permission levels in a project
-type Membership struct {
-	ID         uint            `json:"id" gorm:"primary_key"`
-	CreatedAt  time.Time       `json:"createdAt"`
-	UpdatedAt  time.Time       `json:"updatedAt"`
-	Permission PermissionLevel `json:"permission"`
-	ProjectID  uint            `json:"projectID"`
-	UserID     uint            `json:"userID"`
+// Permission is used to control user access to teams and projects.
+type Permission struct {
+	ID          int64           `json:"id" db:"id"`
+	CreatedDate time.Time       `json:"created_date" db:"created_date"`
+	UpdatedDate time.Time       `json:"updated_date" db:"update_date"`
+	Level       PermissionLevel `json:"level" db:"level"`
+
+	ProjectID int64 `json:"-" db:"project_id"`
+	UserID    int64 `json:"-" db:"user_id"`
 }
