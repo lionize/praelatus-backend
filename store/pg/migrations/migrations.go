@@ -1,6 +1,6 @@
 package migrations
 
-import "github.com/praelatus/backend/store"
+import "github.com/jmoiron/sqlx"
 
 type schema struct {
 	v int
@@ -11,21 +11,34 @@ var schemas = []schema{
 	v1schema,
 }
 
+// SchemaVersion will find the schema version for the given database
+func SchemaVersion(db *sqlx.DB) int {
+	var v int
+
+	rw := db.QueryRow("SELECT schema_version FROM database_information")
+	err := rw.Scan(&v)
+	if err != nil {
+		return 0
+	}
+
+	return v
+
+}
+
 // RunMigrations will run all database migrations depending on the version
 // returned from the database_information table.
-func RunMigrations(s store.SQLStore) error {
+func RunMigrations(db *sqlx.DB) error {
 	for _, schema := range schemas {
-		version := s.SchemaVersion()
+		version := SchemaVersion(db)
 
 		if version < schema.v {
-			_, err := s.RunExec(schema.q)
+			_, err := db.Exec(schema.q)
 			if err != nil {
 				return err
 			}
 
-			_, err = s.RunExec(`INSERT INTO database_information 
-								VALUES (schema_version) = 
-								(` + string(schema.v) + `);`)
+			_, err = db.Exec(`INSERT INTO database_information (schema_version) 
+							  VALUES ($1);`, schema.v)
 			if err != nil {
 				return err
 			}
