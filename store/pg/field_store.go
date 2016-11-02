@@ -66,17 +66,37 @@ func (f *FieldStore) GetAll() ([]models.Field, error) {
 	return fields, nil
 }
 
-// GetValue TODO
+// GetValue gets a field value from the database based on field and ticket ID.
 func (f *FieldStore) GetValue(fieldID int, ticketID int) (*models.FieldValue, error) {
-	return nil, nil
+	var fv models.FieldValue
+
+	err := f.db.QueryRowx(`SELECT * FROM field_values 
+						   WHERE ticket_id = $1 
+						   AND field_id = $2`,
+		fieldID, ticketID).
+		StructScan(&fv)
+
+	return &fv, err
 }
 
-// Save TODO
+// Save updates an existing field in the database.
 func (f *FieldStore) Save(field *models.Field) error {
-	return nil
+	_, err := f.db.Exec(`UPDATE fields SET 
+					     (name, data_type) = ($1, $2) WHERE id = $4;`,
+		field.Name, field.DataType, field.ID)
+
+	return err
 }
 
-// New TODO
+// New creates a new Field in the database.
 func (f *FieldStore) New(field *models.Field) error {
-	return nil
+	id, err := f.db.Exec(`INSERT INTO projects VALUES
+					     (name, data_type) = ($1, $2);`,
+		field.Name, field.DataType)
+	if err != nil {
+		return err
+	}
+
+	field.ID, err = id.LastInsertId()
+	return err
 }
