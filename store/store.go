@@ -62,6 +62,7 @@ type UserStore interface {
 // ProjectStore contains methods for storing and retrieving Projects
 type ProjectStore interface {
 	Get(int64) (*models.Project, error)
+	GetByKey(string, string) (*models.Project, error)
 	GetAll() ([]models.Project, error)
 
 	New(*models.Project) error
@@ -71,6 +72,7 @@ type ProjectStore interface {
 // TicketStore contains methods for storing and retrieving Tickets
 type TicketStore interface {
 	Get(int64) (*models.Ticket, error)
+	GetAll() ([]models.Ticket, error)
 	GetByKey(teamSlug string, projectKey string, ticketKey string) (*models.Ticket, error)
 
 	NewType(*models.TicketType) error

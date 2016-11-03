@@ -19,6 +19,29 @@ func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 	return &t, err
 }
 
+// GetAll gets all the Tickets from the database.
+func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
+	var tickets []models.Ticket
+
+	rows, err := ts.db.Queryx("SELECT * FROM tickets;")
+	if err != nil {
+		return tickets, err
+	}
+
+	for rows.Next() {
+		var t models.Ticket
+
+		err = rows.StructScan(&t)
+		if err != nil {
+			return tickets, err
+		}
+
+		tickets = append(tickets, t)
+	}
+
+	return tickets, nil
+}
+
 // GetByKey will get a ticket by it's ticket key and project / team
 func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 	ticketKey string) (*models.Ticket, error) {
