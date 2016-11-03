@@ -4,6 +4,26 @@ import (
 	"github.com/praelatus/backend/models"
 )
 
+var seedFuncs = []func(s Store) error{
+	SeedUsers,
+	SeedTeams,
+	SeedProjects,
+	SeedTicketTypes,
+	SeedFields,
+}
+
+// SeedAll will run all of the seed functions
+func SeedAll(s Store) error {
+	for _, f := range seedFuncs {
+		e := f(s)
+		if e != nil {
+			return e
+		}
+	}
+
+	return nil
+}
+
 // SeedFields will seed the given store with some test Fields.
 func SeedFields(s Store) error {
 	pe := SeedProjects(s)
@@ -36,7 +56,11 @@ func SeedFields(s Store) error {
 			return e
 		}
 
-		e = s.Fields().AddToProject(1, f.ID)
+		if e == ErrDuplicateEntry {
+			continue
+		}
+
+		e = s.Fields().AddToProject(f.ID, 1)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
