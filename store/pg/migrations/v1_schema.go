@@ -32,14 +32,17 @@ CREATE TABLE IF NOT EXISTS teams (
 
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL PRIMARY KEY,
+	created_date    timestamp DEFAULT current_timestamp,
     name            varchar(250) NOT NULL,
     key				varchar(40) NOT NULL,
-    git_repo        varchar(250),
+    repo			varchar(250),
     homepage        varchar(250),
-    icon_path       varchar(250),
+    icon_url        varchar(250),
 
-    project_lead_id integer REFERENCES users (id),
-    team_id         integer REFERENCES teams (id)
+    lead_id			integer REFERENCES users (id) NOT NULL,
+    team_id         integer REFERENCES teams (id) NOT NULL,
+
+	CONSTRAINT team_pkey UNIQUE (key, team_id)
 );
 
 CREATE TABLE IF NOT EXISTS statuses (
@@ -77,7 +80,7 @@ CREATE TABLE IF NOT EXISTS hooks (
 
 CREATE TABLE IF NOT EXISTS fields (
     id        SERIAL PRIMARY KEY,
-    name      varchar(250),
+    name      varchar(250) UNIQUE,
     data_type varchar(6)
 );
 
