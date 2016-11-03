@@ -51,17 +51,17 @@ func (ts *TicketStore) Save(ticket *models.Ticket) error {
 // New will add a new Ticket to the postgres DB
 func (ts *TicketStore) New(ticket *models.Ticket) error {
 	// TODO update fields?
-	id, err := ts.db.Exec(`INSERT INTO tickets 
-	(summary, description, project_id, assignee_id, reporter_id, 
-	ticket_type_id, status_id) VALUES ($1, $2, $3, $4, $5, $6, $7);`,
-		ticket.Summary, ticket.Description, ticket.ProjectID, ticket.AssigneeID,
-		ticket.ReporterID, ticket.TicketTypeID, ticket.StatusID)
-	if err != nil {
-		return err
-	}
+	err := ts.db.QueryRow(`INSERT INTO tickets 
+						   (summary, description, project_id, assignee_id, 
+						   reporter_id, ticket_type_id, status_id) 
+						   VALUES ($1, $2, $3, $4, $5, $6, $7)
+						   RETURNING id;`,
+		ticket.Summary, ticket.Description, ticket.ProjectID,
+		ticket.AssigneeID, ticket.ReporterID, ticket.TicketTypeID,
+		ticket.StatusID).
+		Scan(&ticket.ID)
 
-	ticket.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // NewType will add a new TicketType to the postgres DB

@@ -21,14 +21,12 @@ func (ss *StatusStore) Get(ID int64) (*models.Status, error) {
 
 // New creates a new Status in the postgres DB
 func (ss *StatusStore) New(status *models.Status) error {
-	id, err := ss.db.Exec(`INSERT INTO statuses (name) VALUES ($1);`,
-		status.Name)
-	if err != nil {
-		return err
-	}
+	err := ss.db.QueryRow(`INSERT INTO statuses (name) VALUES ($1)
+						   RETURNING id;`,
+		status.Name).
+		Scan(&status.ID)
 
-	status.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a Status in the postgres DB

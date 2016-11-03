@@ -40,13 +40,12 @@ func (ls *LabelStore) GetAll() ([]models.Label, error) {
 
 // New creates a new label in the database
 func (ls *LabelStore) New(label *models.Label) error {
-	id, err := ls.db.Exec(`INSERT INTO labels (name) VALUES ($1);`, label.Name)
-	if err != nil {
-		return err
-	}
+	err := ls.db.QueryRow(`INSERT INTO labels (name) VALUES ($1)
+						   RETURNING id;`,
+		label.Name).
+		Scan(&label.ID)
 
-	label.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a label in the database

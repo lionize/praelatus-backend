@@ -29,15 +29,13 @@ func (t *TeamStore) GetBySlug(slug string) (*models.Team, error) {
 
 // New adds a new team to the database.
 func (t *TeamStore) New(team *models.Team) error {
-	id, err := t.db.Exec(`INSERT INTO teams (name, url_slug, icon_url, lead_id) 
-						  VALUES ($1, $2, $3, $4);`,
-		team.Name, team.URLSlug, team.IconURL, team.LeadID)
-	if err != nil {
-		return handlePqErr(err)
-	}
-
-	team.ID, err = id.LastInsertId()
-	return err
+	err := t.db.QueryRow(`INSERT INTO teams 
+						  (name, url_slug, icon_url, lead_id) 
+						  VALUES ($1, $2, $3, $4)
+						  RETURNING id;`,
+		team.Name, team.URLSlug, team.IconURL, team.LeadID).
+		Scan(&team.ID)
+	return handlePqErr(err)
 }
 
 // Save updates a team to the database.

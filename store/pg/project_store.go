@@ -44,15 +44,14 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 
 // New creates a new Project in the database.
 func (ps *ProjectStore) New(project *models.Project) error {
-	id, err := ps.db.Exec(`INSERT INTO projects (name, key, github_repo) 
-						   VALUES ($1, $2, $3);`,
-		project.Name, project.Key, project.GithubRepo)
-	if err != nil {
-		return handlePqErr(err)
-	}
+	err := ps.db.QueryRow(`INSERT INTO projects 
+						   (name, key, github_repo) 
+						   VALUES ($1, $2, $3)
+						   RETURNING id;`,
+		project.Name, project.Key, project.GithubRepo).
+		Scan(&project.ID)
 
-	project.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a Project in the database.
