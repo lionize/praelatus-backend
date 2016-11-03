@@ -89,12 +89,10 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 
 // NewType will add a new TicketType to the postgres DB
 func (ts *TicketStore) NewType(tt *models.TicketType) error {
-	id, err := ts.db.Exec(`INSERT INTO ticket_types (name) VALUES ($1);`,
-		tt.Name)
-	if err != nil {
-		return err
-	}
+	err := ts.db.QueryRow(`INSERT INTO ticket_types (name) 
+						   VALUES ($1)
+						   RETURNING id;`, tt.Name).
+		Scan(&tt.ID)
 
-	tt.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
