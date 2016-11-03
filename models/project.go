@@ -16,10 +16,11 @@ const (
 type Project struct {
 	ID          int64     `json:"id" db:"id"`
 	CreatedDate time.Time `json:"created_date" db:"created_date"`
-	UpdatedDate time.Time `json:"updated_date" db:"updated_date"`
 	Name        string    `json:"name" db:"name"`
 	Key         string    `json:"key" db:"key"`
-	GithubRepo  string    `json:"github_repo,omitempty" db:"github_repo"`
+	Homepage    string    `json:"homepage" db:"homepage"`
+	IconURL     string    `json:"icon_url" db:"icon_url"`
+	Repo        string    `json:"repo,omitempty" db:"repo"`
 
 	LeadID int64 `json:"-" db:"lead_id"`
 	TeamID int64 `json:"-" db:"team_id"`
