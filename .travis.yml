@@ -1,0 +1,12 @@
+language: go
+
+go:
+    - 1.7
+    - master
+
+install:
+    - go get github.com/Masterminds/glide
+    - $GOPATH/bin/glide i
+
+script:
+    - go test $($GOPATH/bin/glide novendor)
