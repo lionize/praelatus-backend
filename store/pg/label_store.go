@@ -50,12 +50,8 @@ func (ls *LabelStore) New(label *models.Label) error {
 
 // Save updates a label in the database
 func (ls *LabelStore) Save(label *models.Label) error {
-	id, err := ls.db.Exec(`UPDATE labels VALUES (name) = ($1) 
+	_, err := ls.db.Exec(`UPDATE labels VALUES (name) = ($1) 
 						   WHERE id = $2;`, label.Name, label.ID)
-	if err != nil {
-		return err
-	}
 
-	label.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
