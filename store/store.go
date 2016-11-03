@@ -75,6 +75,9 @@ type TicketStore interface {
 	GetAll() ([]models.Ticket, error)
 	GetByKey(teamSlug string, projectKey string, ticketKey string) (*models.Ticket, error)
 
+	GetAllComments(ticketID int) ([]models.Comment, error)
+
+	AddComment(ticketID int, comment *models.Comment) error
 	NewType(*models.TicketType) error
 
 	New(*models.Ticket) error
