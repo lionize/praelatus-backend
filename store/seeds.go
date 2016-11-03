@@ -1,6 +1,8 @@
 package store
 
 import (
+	"fmt"
+
 	"github.com/praelatus/backend/models"
 )
 
@@ -10,6 +12,8 @@ var seedFuncs = []func(s Store) error{
 	SeedProjects,
 	SeedTicketTypes,
 	SeedFields,
+	SeedTickets,
+	SeedComments,
 }
 
 // SeedAll will run all of the seed functions
@@ -19,6 +23,80 @@ func SeedAll(s Store) error {
 		if e != nil {
 			return e
 		}
+	}
+
+	return nil
+}
+
+// SeedTickets will add some test tickets to the database
+func SeedTickets(s Store) error {
+	se := SeedUsers(s)
+	if se != nil {
+		return se
+	}
+
+	se = SeedProjects(s)
+	if se != nil {
+		return se
+	}
+
+	se = SeedTeams(s)
+	if se != nil {
+		return se
+	}
+
+	se = SeedFields(s)
+	if se != nil {
+		return se
+	}
+
+	se = SeedTicketTypes(s)
+	if se != nil {
+		return se
+	}
+
+	return nil
+}
+
+// SeedComments will add some comments to all tickets
+func SeedComments(s Store) error {
+	se := SeedTickets(s)
+	if se != nil {
+		return se
+	}
+
+	se = SeedUsers(s)
+	if se != nil {
+		return se
+	}
+
+	t, se := s.Tickets().GetAll()
+	if se != nil {
+		return se
+	}
+
+	for i := 0; i < len(t); i++ {
+		for x := 0; x < 50; x++ {
+			c := &models.Comment{
+				Body: fmt.Sprintf(`This is the %d th comment
+				# Yo Dawg
+				**I** *heard* you
+				> like markdown
+				so I put markdown in your comments`, x),
+				TicketID: int64(i),
+				AuthorID: 1,
+			}
+
+			e := s.Tickets().AddComment(i, c)
+			if e != nil && e != ErrDuplicateEntry {
+				return e
+			}
+
+			if e == ErrDuplicateEntry {
+				return nil
+			}
+		}
+
 	}
 
 	return nil
@@ -64,6 +142,10 @@ func SeedFields(s Store) error {
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
+
+		if e == ErrDuplicateEntry {
+			return nil
+		}
 	}
 
 	return nil
@@ -96,6 +178,10 @@ func SeedProjects(s Store) error {
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
+
+		if e == ErrDuplicateEntry {
+			return nil
+		}
 	}
 
 	return nil
@@ -119,6 +205,10 @@ func SeedTeams(s Store) error {
 		e := s.Teams().New(&team)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
+		}
+
+		if e == ErrDuplicateEntry {
+			return nil
 		}
 	}
 
@@ -150,6 +240,10 @@ func SeedTicketTypes(s Store) error {
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
+
+		if e == ErrDuplicateEntry {
+			return nil
+		}
 	}
 
 	return nil
@@ -178,6 +272,10 @@ func SeedUsers(s Store) error {
 		e := s.Users().New(&u)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
+		}
+
+		if e == ErrDuplicateEntry {
+			return nil
 		}
 	}
 
