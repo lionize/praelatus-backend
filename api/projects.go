@@ -14,7 +14,7 @@ func InitProjectRoutes() {
 
 // TODO
 func ListProjects(c *mw.Context) (int, []byte) {
-	projects, err := Store.Projects().All()
+	projects, err := Store.Projects().GetAll()
 	if err != nil {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}
@@ -29,7 +29,7 @@ func ListProjects(c *mw.Context) (int, []byte) {
 
 // TODO
 func GetProject(c *mw.Context) (int, []byte) {
-	p, err := Store.Project().Get(c.Var("team_slug"), c.Var("key"))
+	p, err := Store.Projects().GetByKey(c.Var("team_slug"), c.Var("key"))
 
 	// TODO: better error handling
 	if err != nil {
