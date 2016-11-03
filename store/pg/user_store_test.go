@@ -1,4 +1,4 @@
-package pg
+package pg_test
 
 import (
 	"testing"
@@ -18,11 +18,7 @@ func failIfErr(t *testing.T, e error) {
 	}
 }
 
-func TestGet(t *testing.T) {
-	s := testStore()
-	err := store.SeedUsers(s)
-	failIfErr(t, err)
-
+func TestUserGet(t *testing.T) {
 	u, e := s.Users().Get(1)
 	failIfErr(t, e)
 
