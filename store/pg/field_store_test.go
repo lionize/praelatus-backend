@@ -4,13 +4,14 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
+	"github.com/praelatus/backend/config"
 	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg"
 )
 
 func testStore() store.Store {
-	return pg.New("postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable")
+	return pg.New(config.GetDbURL())
 }
 
 func failIfErr(t *testing.T, e error) {
