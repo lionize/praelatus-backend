@@ -12,7 +12,7 @@ type TeamStore struct {
 }
 
 // Get retrieves a team from the database based on ID
-func (t *TeamStore) Get(ID int) (*models.Team, error) {
+func (t *TeamStore) Get(ID int64) (*models.Team, error) {
 	var team models.Team
 	err := t.db.QueryRowx("SELECT * FROM teams WHERE id = $1;", ID).
 		StructScan(&team)
@@ -29,22 +29,20 @@ func (t *TeamStore) GetBySlug(slug string) (*models.Team, error) {
 
 // New adds a new team to the database.
 func (t *TeamStore) New(team *models.Team) error {
-	id, err := t.db.Exec(`INSERT INTO teams VALUES 
-	(name, url_slug, icon_url, lead_id) = (?, ?, ?, ?);`,
-		team.Name, team.URLSlug, team.IconURL, team.LeadID)
-	if err != nil {
-		return err
-	}
-
-	team.ID, err = id.LastInsertId()
-	return err
+	err := t.db.QueryRow(`INSERT INTO teams 
+						  (name, url_slug, icon_url, lead_id) 
+						  VALUES ($1, $2, $3, $4)
+						  RETURNING id;`,
+		team.Name, team.URLSlug, team.IconURL, team.LeadID).
+		Scan(&team.ID)
+	return handlePqErr(err)
 }
 
 // Save updates a team to the database.
 func (t *TeamStore) Save(team *models.Team) error {
 	_, err := t.db.Exec(`UPDATE teams SET
-	(name, url_slug, icon_url, lead_id) = (?, ?, ?, ?)
-	WHERE id = ?;`,
+	(name, url_slug, icon_url, lead_id) = ($1, $2, $3, $4)
+	WHERE id = $5;`,
 		team.Name, team.URLSlug, team.IconURL, team.LeadID, team.ID)
 	return err
 }

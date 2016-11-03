@@ -12,10 +12,23 @@ type ProjectStore struct {
 }
 
 // Get gets a project by it's ID in a postgres DB.
-func (ps *ProjectStore) Get(ID int) (*models.Project, error) {
+func (ps *ProjectStore) Get(ID int64) (*models.Project, error) {
 	var p models.Project
 	err := ps.db.QueryRowx("SELECT * FROM projects WHERE id = $1;", ID).
 		StructScan(&p)
+	return &p, err
+}
+
+// GetByKey gets a project by it's project key
+func (ps *ProjectStore) GetByKey(slug, key string) (*models.Project, error) {
+	var p models.Project
+	err := ps.db.QueryRowx(`SELECT * FROM projects 
+							JOIN teams ON projects.team_id = teams.id
+							WHERE projects.key = $1
+							AND teams.url_slug = $2;`,
+		key, slug).
+		StructScan(&p)
+
 	return &p, err
 }
 
@@ -44,22 +57,27 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 
 // New creates a new Project in the database.
 func (ps *ProjectStore) New(project *models.Project) error {
-	id, err := ps.db.Exec(`INSERT INTO projects VALUES 
-						   (name, key, github_repo) = ($1, $2, $3);`,
-		project.Name, project.Key, project.GithubRepo)
-	if err != nil {
-		return err
-	}
+	err := ps.db.QueryRow(`INSERT INTO projects 
+						   (name, key, repo, homepage, icon_url, 
+						    team_id, lead_id) 
+						   VALUES ($1, $2, $3, $4, $5, $6, $7)
+						   RETURNING id;`,
+		project.Name, project.Key, project.Repo, project.Homepage,
+		project.IconURL, project.TeamID, project.LeadID).
+		Scan(&project.ID)
 
-	project.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a Project in the database.
 func (ps *ProjectStore) Save(project *models.Project) error {
-	_, err := ps.db.Exec(`UPDATE projects SET
-	(name, key, github_repo) = ($1, $2, $3) WHERE id = $4;`,
-		project.Name, project.Key, project.GithubRepo, project.ID)
+	_, err := ps.db.Exec(`UDATE projects SET
+						  (name, key, repo, homepage, icon_url, 
+						  team_id, lead_id) =
+						  ($1, $2, $3, $4, $5, $6, $7)
+						  WHERE id = $8;`,
+		project.Name, project.Key, project.Repo, project.Homepage,
+		project.IconURL, project.TeamID, project.LeadID, project.ID)
 
-	return err
+	return handlePqErr(err)
 }

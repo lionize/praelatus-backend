@@ -5,6 +5,7 @@ import (
 
 	log "github.com/iamthemuffinman/logsip"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg/migrations"
 )
@@ -48,7 +49,7 @@ func New(conn string, replicas ...string) store.Store {
 		teams:       &TeamStore{d},
 	}
 
-	err = migrations.RunMigrations(s)
+	err = migrations.RunMigrations(s.db)
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -101,26 +102,33 @@ func (pg *Store) Transitions() store.TransitionStore {
 	return pg.transitions
 }
 
-// RunExec executes q it is analogous to Exec on the sqlx.DB
-func (pg *Store) RunExec(q string) (sql.Result, error) {
-	return pg.db.Exec(q)
+// Connection implementes store.SQLStore for postgres db
+func (pg *Store) Connection() *sql.DB {
+	return pg.db.DB
 }
 
-// RunQuery runs the query specified by q and returns the rows and any errors
-// encountered.
-func (pg *Store) RunQuery(q string) (*sqlx.Rows, error) {
-	return pg.db.Queryx(q)
-}
-
-// SchemaVersion returns the current schema version of the database.
-func (pg *Store) SchemaVersion() int {
-	var v int
-
-	rw, err := pg.RunQuery("SELECT schema_version FROM database_information")
-	if err != nil {
-		return 0
+// toPqErr converts an error to a pq.Error so we can access more info about what
+// happened.
+func toPqErr(e error) *pq.Error {
+	if err, ok := e.(*pq.Error); ok {
+		return err
 	}
 
-	rw.Scan(&v)
-	return v
+	return nil
+}
+
+func handlePqErr(e error) error {
+	pqe := toPqErr(e)
+	if pqe == nil {
+		return e
+	}
+
+	log.Error(e)
+
+	// fmt.Println("PQ ERROR CODE:", pqe.Code)
+	if pqe.Code == "23505" {
+		return store.ErrDuplicateEntry
+	}
+
+	return e
 }

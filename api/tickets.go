@@ -18,9 +18,10 @@ func InitTicketRoutes() {
 
 // ListTickets will list all tickets in the database
 func ListTickets(c *mw.Context) (int, []byte) {
-	var tickets []models.TicketJSON
-
-	tickets = store.Tickets().GetAll(c.Var("team_slug"), c.Var("pkey"))
+	tickets, err := Store.Tickets().GetAll()
+	if err != nil {
+		return 500, []byte(err.Error())
+	}
 
 	tjson, err := json.Marshal(tickets)
 	if err != nil {
@@ -39,7 +40,7 @@ func CreateTicket(c *mw.Context) (int, []byte) {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}
 
-	err = Store.Tickets().Save(&t)
+	err = Store.Tickets().Save(models.TicketFromJSON(t))
 	if err != nil {
 		return http.StatusInternalServerError, []byte(err.Error())
 	}

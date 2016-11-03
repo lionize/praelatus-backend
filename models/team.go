@@ -1,5 +1,7 @@
 package models
 
+import "strings"
+
 // Team maps directly to the teams database table.
 type Team struct {
 	ID       int64  `json:"id" db:"id"`
@@ -16,4 +18,17 @@ type TeamJSON struct {
 	Team
 
 	Lead User `json:"lead"`
+}
+
+// NewTeam makes a new team generating the slug based on it's name.
+func NewTeam(name, homepage, iconURL string) Team {
+	slug := strings.ToLower(name)
+	slug = strings.Replace(slug, " ", "-", -1)
+
+	return Team{
+		Name:     name,
+		IconURL:  iconURL,
+		Homepage: homepage,
+		URLSlug:  slug,
+	}
 }

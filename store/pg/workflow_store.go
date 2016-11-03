@@ -12,7 +12,7 @@ type WorkflowStore struct {
 }
 
 // Get gets a workflow from the database by it's ID
-func (ws *WorkflowStore) Get(ID int) (*models.Workflow, error) {
+func (ws *WorkflowStore) Get(ID int64) (*models.Workflow, error) {
 	var w models.Workflow
 	err := ws.db.QueryRowx("SELECT * FROM workflows WHERE id = $1;", ID).
 		StructScan(&w)
@@ -40,15 +40,14 @@ func (ws *WorkflowStore) GetAll() ([]models.Workflow, error) {
 
 // New creates a new workflow in the database
 func (ws *WorkflowStore) New(workflow *models.Workflow) error {
-	id, err := ws.db.Exec(`INSERT INTO workflows VALUES 
-						   (name, project_id) = ($1, $2)`,
-		workflow.Name, workflow.ProjectID)
-	if err != nil {
-		return err
-	}
+	err := ws.db.QueryRow(`INSERT INTO workflows 
+						   (name, project_id) 
+						   VALUES ($1, $2)
+						   RETURNING id;`,
+		workflow.Name, workflow.ProjectID).
+		Scan(&workflow.ID)
 
-	workflow.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a workflow in the database

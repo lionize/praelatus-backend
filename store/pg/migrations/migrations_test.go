@@ -1,28 +1,27 @@
 package migrations
 
 import (
-	"database/sql"
 	"testing"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
-type TestSQLStore struct {
-	db *sqlx.DB
-}
+func testDB(t *testing.T) *sqlx.DB {
+	d, err := sqlx.Open("postgres",
+		"postgres://postgres:postgres@localhost:5432/prae_dev?sslmode=disable")
+	if err != nil {
+		t.Error(err)
+	}
 
-func (t *TestSQLStore) SchemaVersion() int {
-	return 0
-}
-
-func (t *TestSQLStore) RunQuery(query string) (*sqlx.Rows, error) {
-	return t.db.Queryx(query)
-}
-
-func (t *TestSQLStore) RunExec(query string) (sql.Result, error) {
-	return t.db.Exec(query)
+	return d
 }
 
 func TestRunMigrations(t *testing.T) {
+	db := testDB(t)
 
+	err := RunMigrations(db)
+	if err != nil {
+		t.Error(err)
+	}
 }

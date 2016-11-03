@@ -12,7 +12,7 @@ type StatusStore struct {
 }
 
 // Get gets a Status by it's ID in a postgres DB
-func (ss *StatusStore) Get(ID int) (*models.Status, error) {
+func (ss *StatusStore) Get(ID int64) (*models.Status, error) {
 	var s models.Status
 	err := ss.db.QueryRowx("SELECT * FROM statuses WHERE id = $1;", ID).
 		StructScan(&s)
@@ -21,14 +21,12 @@ func (ss *StatusStore) Get(ID int) (*models.Status, error) {
 
 // New creates a new Status in the postgres DB
 func (ss *StatusStore) New(status *models.Status) error {
-	id, err := ss.db.Exec(`INSERT INTO statuses VALUES (name) = ($1);`,
-		status.Name)
-	if err != nil {
-		return err
-	}
+	err := ss.db.QueryRow(`INSERT INTO statuses (name) VALUES ($1)
+						   RETURNING id;`,
+		status.Name).
+		Scan(&status.ID)
 
-	status.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a Status in the postgres DB

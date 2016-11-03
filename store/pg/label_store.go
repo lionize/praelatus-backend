@@ -12,7 +12,7 @@ type LabelStore struct {
 }
 
 // Get gets a label from the database by it's ID
-func (ls *LabelStore) Get(ID int) (*models.Label, error) {
+func (ls *LabelStore) Get(ID int64) (*models.Label, error) {
 	var l models.Label
 	err := ls.db.QueryRowx("SELECT * FROM labels WHERE id = $1", ID).
 		StructScan(&l)
@@ -40,23 +40,18 @@ func (ls *LabelStore) GetAll() ([]models.Label, error) {
 
 // New creates a new label in the database
 func (ls *LabelStore) New(label *models.Label) error {
-	id, err := ls.db.Exec(`INSERT INTO labels VALUES (name) = ($1);`, label.Name)
-	if err != nil {
-		return err
-	}
+	err := ls.db.QueryRow(`INSERT INTO labels (name) VALUES ($1)
+						   RETURNING id;`,
+		label.Name).
+		Scan(&label.ID)
 
-	label.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }
 
 // Save updates a label in the database
 func (ls *LabelStore) Save(label *models.Label) error {
-	id, err := ls.db.Exec(`UPDATE labels VALUES (name) = ($1) 
+	_, err := ls.db.Exec(`UPDATE labels VALUES (name) = ($1) 
 						   WHERE id = $2;`, label.Name, label.ID)
-	if err != nil {
-		return err
-	}
 
-	label.ID, err = id.LastInsertId()
-	return err
+	return handlePqErr(err)
 }

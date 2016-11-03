@@ -1,5 +1,5 @@
-hash: 54a3501209a9880f77e9146ff52ddfa1b53bf5e02635f75dabef5de0c5f7a2b8
-updated: 2016-11-01T11:21:37.272581197-04:00
+hash: 699be2236ea55ff6988e1b083a6b0c830fbbdd9b71a2c9aefa330cdca7f2b11f
+updated: 2016-11-02T09:35:37.759744914-04:00
 imports:
 - name: github.com/gorilla/context
   version: 1ea25387ff6f684839d82767c1733ff4d4d15d0a
@@ -13,6 +13,10 @@ imports:
   version: 5f97679e23f75f42b265fec8d3bdb1c8de90b79d
   subpackages:
   - reflectx
+- name: github.com/lib/pq
+  version: a37edb86214894fa6c6c3401a4c4976b02176dd3
+  subpackages:
+  - oid
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
