@@ -1,30 +1,23 @@
-package pg
+package pg_test
 
 import (
 	"testing"
 
 	_ "github.com/lib/pq"
-	"github.com/praelatus/backend/config"
-	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/store"
-	"github.com/praelatus/backend/store/pg"
 )
 
-func testStore() store.Store {
-	return pg.New(config.GetDbURL())
-}
+var s store.Store
 
-func failIfErr(t *testing.T, e error) {
+func init() {
+	s = testStore()
+	e := store.SeedAll(s)
 	if e != nil {
-		t.Error("Test failed with error: ", e)
+		panic(e)
 	}
 }
 
-func TestGet(t *testing.T) {
-	s := testStore()
-	err := store.SeedFields(s)
-	failIfErr(t, err)
-
+func TestFieldGet(t *testing.T) {
 	f, e := s.Fields().Get(1)
 	failIfErr(t, e)
 
@@ -33,11 +26,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetAll(t *testing.T) {
-	s := testStore()
-	err := store.SeedFields(s)
-	failIfErr(t, err)
-
+func TestFieldGetAll(t *testing.T) {
 	f, e := s.Fields().GetAll()
 	failIfErr(t, e)
 
@@ -50,11 +39,7 @@ func TestGetAll(t *testing.T) {
 	}
 }
 
-func TestGetByProject(t *testing.T) {
-	s := testStore()
-	err := store.SeedFields(s)
-	failIfErr(t, err)
-
+func TestFieldGetByProject(t *testing.T) {
 	f, e := s.Fields().GetByProject(1)
 	failIfErr(t, e)
 
@@ -67,22 +52,6 @@ func TestGetByProject(t *testing.T) {
 	}
 }
 
-func TestGetValue(t *testing.T) {
+func TestFieldGetValue(t *testing.T) {
 	t.Fail()
-}
-
-func TestAddToProject(t *testing.T) {
-	s := testStore()
-	e := store.SeedTicketTypes(s)
-	failIfErr(t, e)
-
-	f, e := models.NewField("Project Field 1", "STRING")
-	failIfErr(t, e)
-
-	s.Fields().New(&f)
-
-	e = s.Fields().AddToProject(1, f.ID)
-	failIfErr(t, e)
-
-	e = s.Fields().AddToProject(1, f.ID, 1, 2)
 }
