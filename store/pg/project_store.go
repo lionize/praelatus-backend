@@ -58,10 +58,12 @@ func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 // New creates a new Project in the database.
 func (ps *ProjectStore) New(project *models.Project) error {
 	err := ps.db.QueryRow(`INSERT INTO projects 
-						   (name, key, github_repo) 
-						   VALUES ($1, $2, $3)
+						   (name, key, repo, homepage, icon_url, 
+						    team_id, lead_id) 
+						   VALUES ($1, $2, $3, $4, $5, $6, $7)
 						   RETURNING id;`,
-		project.Name, project.Key, project.GithubRepo).
+		project.Name, project.Key, project.Repo, project.Homepage,
+		project.IconURL, project.TeamID, project.LeadID).
 		Scan(&project.ID)
 
 	return handlePqErr(err)
@@ -69,9 +71,13 @@ func (ps *ProjectStore) New(project *models.Project) error {
 
 // Save updates a Project in the database.
 func (ps *ProjectStore) Save(project *models.Project) error {
-	_, err := ps.db.Exec(`UPDATE projects SET
-	(name, key, github_repo) = ($1, $2, $3) WHERE id = $4;`,
-		project.Name, project.Key, project.GithubRepo, project.ID)
+	_, err := ps.db.Exec(`UDATE projects SET
+						  (name, key, repo, homepage, icon_url, 
+						  team_id, lead_id) =
+						  ($1, $2, $3, $4, $5, $6, $7)
+						  WHERE id = $8;`,
+		project.Name, project.Key, project.Repo, project.Homepage,
+		project.IconURL, project.TeamID, project.LeadID, project.ID)
 
-	return err
+	return handlePqErr(err)
 }
