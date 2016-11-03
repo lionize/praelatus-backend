@@ -25,7 +25,10 @@ func (f *FieldStore) GetByProject(projectID int64) ([]models.Field, error) {
 	var fields []models.Field
 
 	rows, err := f.db.Queryx(
-		"SELECT * FROM fields_projects WHERE project_id = $1",
+		`SELECT fields.id, fields.name, fields.data_type FROM 
+		fields
+		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
+		WHERE ftp.project_id = $1;`,
 		projectID)
 	if err != nil {
 		return fields, err
@@ -98,7 +101,7 @@ func (f *FieldStore) AddToProject(fieldID, projectID int64, ticketTypes ...int64
 	}
 
 	_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
-						(field_id, project_id) VALUES ($1, $2 );`,
+						(field_id, project_id) VALUES ($1, $2);`,
 		fieldID, projectID)
 	return err
 }
