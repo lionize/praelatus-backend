@@ -19,6 +19,19 @@ func (ps *ProjectStore) Get(ID int64) (*models.Project, error) {
 	return &p, err
 }
 
+// GetByKey gets a project by it's project key
+func (ps *ProjectStore) GetByKey(slug, key string) (*models.Project, error) {
+	var p models.Project
+	err := ps.db.QueryRowx(`SELECT * FROM projects 
+							JOIN teams ON projects.team_id = teams.id
+							WHERE projects.key = $1
+							AND teams.url_slug = $2;`,
+		key, slug).
+		StructScan(&p)
+
+	return &p, err
+}
+
 // GetAll returns all projects
 func (ps *ProjectStore) GetAll() ([]models.Project, error) {
 	var projects []models.Project
