@@ -2,7 +2,6 @@ package pg
 
 import (
 	"database/sql"
-	"fmt"
 
 	log "github.com/iamthemuffinman/logsip"
 	"github.com/jmoiron/sqlx"
@@ -121,7 +120,6 @@ func toPqErr(e error) *pq.Error {
 func handlePqErr(e error) error {
 	pqe := toPqErr(e)
 	if pqe == nil {
-		fmt.Println("Failed to convert to pqErr")
 		return e
 	}
 
