@@ -28,3 +28,5 @@ envfile
 tessera
 gin-bin
 client/dist/*
+
+.vagrant/*
