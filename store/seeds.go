@@ -14,6 +14,7 @@ var seedFuncs = []func(s Store) error{
 	SeedTicketTypes,
 	SeedFields,
 	SeedStatuses,
+	SeedLabels,
 	SeedTickets,
 	SeedComments,
 }
@@ -24,6 +25,30 @@ func SeedAll(s Store) error {
 	for _, f := range seedFuncs {
 		e := f(s)
 		if e != nil {
+			return e
+		}
+	}
+
+	return nil
+}
+
+// SeedLabels will add some test labesl to the database
+func SeedLabels(s Store) error {
+	labels := []models.Label{
+		models.Label{
+			Name: "test",
+		},
+		models.Label{
+			Name: "duplicate",
+		},
+		models.Label{
+			Name: "wontfix",
+		},
+	}
+
+	for _, l := range labels {
+		e := s.Labels().New(&l)
+		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
 	}
