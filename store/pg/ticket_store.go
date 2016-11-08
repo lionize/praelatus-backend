@@ -1,6 +1,8 @@
-// package pg
+package pg
 
 import (
+	"time"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
@@ -66,9 +68,9 @@ func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 func (ts *TicketStore) Save(ticket *models.Ticket) error {
 	// TODO update fields?
 	_, err := ts.db.Exec(`UPDATE tickets SET 
-						  (summary, description) = ($1, $2) 
-						  WHERE id = $3;`,
-		ticket.Summary, ticket.Description, ticket.ID)
+						  (summary, description, updated_date) = ($1, $2, $3) 
+						  WHERE id = $4;`,
+		ticket.Summary, ticket.Description, time.Now(), ticket.ID)
 	return handlePqErr(err)
 }
 
@@ -77,12 +79,13 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 	// TODO update fields?
 	err := ts.db.QueryRow(`INSERT INTO tickets 
 						   (summary, description, project_id, assignee_id, 
-						   reporter_id, ticket_type_id, status_id) 
-						   VALUES ($1, $2, $3, $4, $5, $6, $7)
+						   reporter_id, ticket_type_id, status_id, key, 
+						   updated_date) 
+						   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 						   RETURNING id;`,
 		ticket.Summary, ticket.Description, ticket.ProjectID,
 		ticket.AssigneeID, ticket.ReporterID, ticket.TicketTypeID,
-		ticket.StatusID).
+		ticket.StatusID, ticket.Key, time.Now()).
 		Scan(&ticket.ID)
 
 	return handlePqErr(err)
