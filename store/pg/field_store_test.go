@@ -1,6 +1,7 @@
 package pg_test
 
 import (
+	"fmt"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -8,12 +9,18 @@ import (
 )
 
 var s store.Store
+var seeded bool
 
 func init() {
-	s = testStore()
-	e := store.SeedAll(s)
-	if e != nil {
-		panic(e)
+	if !seeded {
+		fmt.Println("Prepping tests")
+		s = testStore()
+		e := store.SeedAll(s)
+		if e != nil {
+			panic(e)
+		}
+
+		seeded = true
 	}
 }
 
