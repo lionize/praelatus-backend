@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
+	"github.com/praelatus/backend/models"
 	"github.com/praelatus/backend/store"
 )
 
@@ -59,6 +60,30 @@ func TestFieldGetByProject(t *testing.T) {
 	}
 }
 
+// TODO
 func TestFieldGetValue(t *testing.T) {
 	t.Fail()
+}
+
+func TestSave(t *testing.T) {
+	field := &models.Field{
+		ID:       1,
+		Name:     "Story Points",
+		DataType: "INT",
+	}
+
+	e := s.Fields().Save(field)
+	failIfErr(t, e)
+
+	f, e := s.Fields().Get(1)
+	failIfErr(t, e)
+
+	if f.Name != "Story Points" {
+		t.Errorf("Expected Story Points got: %s\n", f.Name)
+	}
+
+	if f.DataType != "INT" {
+		t.Errorf("Expected INT got: %s\n", f.DataType)
+	}
+
 }
