@@ -48,14 +48,13 @@ func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 
 	var t models.Ticket
 
-	err := ts.db.QueryRowx(`
-		SELECT * FROM tickets 
-		JOIN projects AS p ON p.id = tickets.project_id
-		JOIN teams AS t ON t.id = p.team_id
-		WHERE 
-		t.url_slug = $1 AND
-		p.key = $2 AND
-		tickets.key = $3;`,
+	err := ts.db.QueryRowx(`SELECT * FROM tickets 
+						    JOIN projects AS p ON p.id = tickets.project_id
+						    JOIN teams AS t ON t.id = p.team_id
+						    WHERE 
+						    t.url_slug = $1 AND
+						    p.key = $2 AND
+						    tickets.key = $3;`,
 		teamSlug, projectKey, ticketKey).
 		StructScan(&t)
 
@@ -66,9 +65,10 @@ func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 func (ts *TicketStore) Save(ticket *models.Ticket) error {
 	// TODO update fields?
 	_, err := ts.db.Exec(`UPDATE tickets SET 
-		(summary, description) = ($1, $2) WHERE id = $3;`,
+						  (summary, description) = ($1, $2) 
+						  WHERE id = $3;`,
 		ticket.Summary, ticket.Description, ticket.ID)
-	return err
+	return handlePqErr(err)
 }
 
 // New will add a new Ticket to the postgres DB
@@ -87,12 +87,43 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 	return handlePqErr(err)
 }
 
+// SaveType will add a new TicketType to the postgres DB
+func (ts *TicketStore) SaveType(tt *models.TicketType) error {
+	err := ts.db.Exec(`UPDATE ticket_types 
+					   SET (name)  = ($1) WHERE id = $2`,
+		tt.Name, tt.ID)
+	return handlePqErr(err)
+}
+
 // NewType will add a new TicketType to the postgres DB
 func (ts *TicketStore) NewType(tt *models.TicketType) error {
 	err := ts.db.QueryRow(`INSERT INTO ticket_types (name) 
 						   VALUES ($1)
-						   RETURNING id;`, tt.Name).
+						   RETURNING id;`,
+		tt.Name).
 		Scan(&tt.ID)
+
+	return handlePqErr(err)
+}
+
+// SaveComment will save the comment into the database.
+func (ts *TicketStore) SaveComment(comment *models.Comment) error {
+	err := ts.db.Exec(`UPDATE comments 
+					   SET (body, ticket_id, author_id) = ($1, $2, $3) 
+					   WHERE id = $4;`,
+		comment.Body, comment.TicketID, comment.AuthorID, comment.ID)
+
+	return handlePqErr(err)
+}
+
+// NewComment will save the comment into the database.
+func (ts *TicketStore) NewComment(comment *models.Comment) error {
+	err := ts.db.QueryRow(`INSERT INTO comments 
+					       (body, ticket_id, author_id) 
+						   VALUES ($1, $2, $3)
+						   RETURNING id;`,
+		comment.Body, comment.TicketID, comment.AuthorID).
+		Scan(&comment.ID)
 
 	return handlePqErr(err)
 }
