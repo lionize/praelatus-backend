@@ -16,6 +16,7 @@ var (
 type Store interface {
 	Users() UserStore
 	Teams() TeamStore
+	Labels() LabelStore
 	Fields() FieldStore
 	Tickets() TicketStore
 	Projects() ProjectStore
