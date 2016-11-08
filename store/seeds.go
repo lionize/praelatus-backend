@@ -13,6 +13,7 @@ var seedFuncs = []func(s Store) error{
 	SeedProjects,
 	SeedTicketTypes,
 	SeedFields,
+	SeedStatuses,
 	SeedTickets,
 	SeedComments,
 }
@@ -32,41 +33,11 @@ func SeedAll(s Store) error {
 
 // SeedTickets will add some test tickets to the database
 func SeedTickets(s Store) error {
-	se := SeedUsers(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedProjects(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedTeams(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedFields(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedTicketTypes(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedStatuses(s)
-	if se != nil {
-		return se
-	}
-
 	fmt.Println("Seeding tickets")
 	for i := 0; i < 50; i++ {
 		t := &models.Ticket{
 			Key:          "TEST-" + strconv.Itoa(s.Tickets().NewKey(1)),
-			Summary:      "This is a test ticket. #" + strconv.ItoA(i),
+			Summary:      "This is a test ticket. #" + strconv.Itoa(i),
 			Description:  "No really, this is just a test",
 			ProjectID:    1,
 			TicketTypeID: 1,
@@ -75,7 +46,6 @@ func SeedTickets(s Store) error {
 			StatusID:     1,
 		}
 
-		fmt.Println(t)
 		e := s.Tickets().New(t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
@@ -112,31 +82,21 @@ func SeedStatuses(s Store) error {
 
 // SeedComments will add some comments to all tickets
 func SeedComments(s Store) error {
-	se := SeedTickets(s)
-	if se != nil {
-		return se
-	}
-
-	se = SeedUsers(s)
-	if se != nil {
-		return se
-	}
-
+	fmt.Println("Seeding comments")
 	t, se := s.Tickets().GetAll()
 	if se != nil {
 		return se
 	}
 
-	fmt.Println("Seeding comments")
-	for i := 0; i < len(t); i++ {
-		for x := 0; x < 50; x++ {
+	for _, tk := range t {
+		for x := 0; x < 25; x++ {
 			c := &models.Comment{
 				Body: fmt.Sprintf(`This is the %d th comment
 				# Yo Dawg
 				**I** *heard* you
 				> like markdown
 				so I put markdown in your comments`, x),
-				TicketID: int64(i),
+				TicketID: tk.ID,
 				AuthorID: 1,
 			}
 
@@ -157,11 +117,6 @@ func SeedComments(s Store) error {
 
 // SeedFields will seed the given store with some test Fields.
 func SeedFields(s Store) error {
-	pe := SeedProjects(s)
-	if pe != nil {
-		return pe
-	}
-
 	fields := []models.Field{
 		models.Field{
 			Name:     "TestField1",
@@ -207,11 +162,6 @@ func SeedFields(s Store) error {
 
 // SeedProjects will seed the given store with some test projects.
 func SeedProjects(s Store) error {
-	te := SeedTeams(s)
-	if te != nil {
-		return te
-	}
-
 	projects := []models.Project{
 		models.Project{
 			Name:   "TEST Project",
@@ -244,11 +194,6 @@ func SeedProjects(s Store) error {
 
 // SeedTeams will seed the database with some test Teams.
 func SeedTeams(s Store) error {
-	ue := SeedUsers(s)
-	if ue != nil {
-		return ue
-	}
-
 	teams := []models.Team{
 		models.NewTeam("The A Team", "", ""),
 		models.NewTeam("The B Team", "", ""),
