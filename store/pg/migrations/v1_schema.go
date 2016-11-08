@@ -1,14 +1,6 @@
 package migrations
 
 const v1body = `
-CREATE OR REPLACE FUNCTION update_date()	
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_date = now();
-	RETURN NEW;	
-END;
-$$ language 'plpgsql';
-
 CREATE TABLE IF NOT EXISTS users (
     id              SERIAL PRIMARY KEY,
     username        varchar(40) UNIQUE NOT NULL,
@@ -104,9 +96,6 @@ CREATE TABLE IF NOT EXISTS tickets (
     ticket_type_id integer REFERENCES ticket_types (id) NOT NULL,
     status_id      integer REFERENCES statuses (id) NOT NULL
 );
-
-CREATE TRIGGER update_ticket_updated_date BEFORE 
-UPDATE ON tickets FOR EACH ROW EXECUTE PROCEDURE update_date();
 
 CREATE TABLE IF NOT EXISTS field_values (
     id		  SERIAL PRIMARY KEY,
