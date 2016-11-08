@@ -87,7 +87,7 @@ func SeedComments(s Store) error {
 				AuthorID: 1,
 			}
 
-			e := s.Tickets().AddComment(i, c)
+			e := s.Tickets().NewComment(c)
 			if e != nil && e != ErrDuplicateEntry {
 				return e
 			}
