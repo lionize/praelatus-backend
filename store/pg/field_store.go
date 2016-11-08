@@ -109,7 +109,7 @@ func (f *FieldStore) AddToProject(fieldID, projectID int64, ticketTypes ...int64
 // Save updates an existing field in the database.
 func (f *FieldStore) Save(field *models.Field) error {
 	_, err := f.db.Exec(`UPDATE fields SET 
-					     (name, data_type) = ($1, $2) WHERE id = $4;`,
+					     (name, data_type) = ($1, $2) WHERE id = $3;`,
 		field.Name, field.DataType, field.ID)
 
 	return err
