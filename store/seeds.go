@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/praelatus/backend/models"
 )
@@ -18,6 +19,7 @@ var seedFuncs = []func(s Store) error{
 
 // SeedAll will run all of the seed functions
 func SeedAll(s Store) error {
+	fmt.Println("Seeding All")
 	for _, f := range seedFuncs {
 		e := f(s)
 		if e != nil {
@@ -55,6 +57,56 @@ func SeedTickets(s Store) error {
 		return se
 	}
 
+	se = SeedStatuses(s)
+	if se != nil {
+		return se
+	}
+
+	fmt.Println("Seeding tickets")
+	for i := 0; i < 50; i++ {
+		t := &models.Ticket{
+			Key:          "TEST-" + strconv.Itoa(s.Tickets().NewKey(1)),
+			Summary:      "This is a test ticket. #" + strconv.ItoA(i),
+			Description:  "No really, this is just a test",
+			ProjectID:    1,
+			TicketTypeID: 1,
+			ReporterID:   2,
+			AssigneeID:   1,
+			StatusID:     1,
+		}
+
+		fmt.Println(t)
+		e := s.Tickets().New(t)
+		if e != nil && e != ErrDuplicateEntry {
+			return e
+		}
+	}
+
+	return nil
+}
+
+// SeedStatuses will add some ticket statuses to the database
+func SeedStatuses(s Store) error {
+	statuses := []models.Status{
+		models.Status{
+			Name: "Open",
+		},
+		models.Status{
+			Name: "In Progress",
+		},
+		models.Status{
+			Name: "Done",
+		},
+	}
+
+	fmt.Println("Seeding statuses")
+	for _, st := range statuses {
+		e := s.Statuses().New(&st)
+		if e != nil && e != ErrDuplicateEntry {
+			return e
+		}
+	}
+
 	return nil
 }
 
@@ -75,6 +127,7 @@ func SeedComments(s Store) error {
 		return se
 	}
 
+	fmt.Println("Seeding comments")
 	for i := 0; i < len(t); i++ {
 		for x := 0; x < 50; x++ {
 			c := &models.Comment{
@@ -128,6 +181,7 @@ func SeedFields(s Store) error {
 		},
 	}
 
+	fmt.Println("Seeding fields")
 	for _, f := range fields {
 		e := s.Fields().New(&f)
 		if e != nil && e != ErrDuplicateEntry {
@@ -173,6 +227,7 @@ func SeedProjects(s Store) error {
 		},
 	}
 
+	fmt.Println("Seeding projects")
 	for _, p := range projects {
 		e := s.Projects().New(&p)
 		if e != nil && e != ErrDuplicateEntry {
@@ -199,6 +254,7 @@ func SeedTeams(s Store) error {
 		models.NewTeam("The B Team", "", ""),
 	}
 
+	fmt.Println("Seeding teams")
 	for _, team := range teams {
 		team.LeadID = 1
 
@@ -235,6 +291,7 @@ func SeedTicketTypes(s Store) error {
 		},
 	}
 
+	fmt.Println("Seeding ticket types")
 	for _, t := range types {
 		e := s.Tickets().NewType(&t)
 		if e != nil && e != ErrDuplicateEntry {
@@ -268,6 +325,7 @@ func SeedUsers(s Store) error {
 		*t2,
 	}
 
+	fmt.Println("Seeding users")
 	for _, u := range users {
 		e := s.Users().New(&u)
 		if e != nil && e != ErrDuplicateEntry {

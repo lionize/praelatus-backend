@@ -1,4 +1,4 @@
-package pg
+// package pg
 
 import (
 	"github.com/jmoiron/sqlx"
@@ -16,6 +16,7 @@ func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := ts.db.QueryRowx("SELECT * FROM tickets WHERE id = $1;", ID).
 		StructScan(&t)
+
 	return &t, err
 }
 
@@ -87,12 +88,28 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 	return handlePqErr(err)
 }
 
-// SaveType will add a new TicketType to the postgres DB
-func (ts *TicketStore) SaveType(tt *models.TicketType) error {
-	err := ts.db.Exec(`UPDATE ticket_types 
-					   SET (name)  = ($1) WHERE id = $2`,
-		tt.Name, tt.ID)
-	return handlePqErr(err)
+// GetAllComments will return all comments for a ticket based on it's ID
+func (ts *TicketStore) GetAllComments(ticketID int) ([]models.Comment, error) {
+	var comments []models.Comment
+
+	rows, err := ts.db.Queryx(`SELECT * FROM comments WHERE ticket_id = $1`, ticketID)
+
+	if err != nil {
+		return comments, err
+	}
+
+	for rows.Next() {
+		var c models.Comment
+
+		err := rows.StructScan(&c)
+		if err != nil {
+			return comments, err
+		}
+
+		comments = append(comments, c)
+	}
+
+	return comments, nil
 }
 
 // NewType will add a new TicketType to the postgres DB
@@ -106,24 +123,49 @@ func (ts *TicketStore) NewType(tt *models.TicketType) error {
 	return handlePqErr(err)
 }
 
-// SaveComment will save the comment into the database.
-func (ts *TicketStore) SaveComment(comment *models.Comment) error {
-	err := ts.db.Exec(`UPDATE comments 
-					   SET (body, ticket_id, author_id) = ($1, $2, $3) 
-					   WHERE id = $4;`,
-		comment.Body, comment.TicketID, comment.AuthorID, comment.ID)
+// NewComment will add a new Comment to the postgres DB
+func (ts *TicketStore) NewComment(c *models.Comment) error {
+	err := ts.db.QueryRow(`INSERT INTO comments 
+						   (body, ticket_id, author_id) 
+						   VALUES ($1, $2, $3)
+						   RETURNING id;`,
+		c.Body, c.TicketID, c.AuthorID).
+		Scan(&c.ID)
 
 	return handlePqErr(err)
 }
 
-// NewComment will save the comment into the database.
-func (ts *TicketStore) NewComment(comment *models.Comment) error {
-	err := ts.db.QueryRow(`INSERT INTO comments 
-					       (body, ticket_id, author_id) 
-						   VALUES ($1, $2, $3)
-						   RETURNING id;`,
-		comment.Body, comment.TicketID, comment.AuthorID).
-		Scan(&comment.ID)
+// SaveType will add a new TicketType to the postgres DB
+func (ts *TicketStore) SaveType(tt *models.TicketType) error {
+	_, err := ts.db.Exec(`UPDATE ticket_types 
+						   SET VALUES (name) = ($1)`,
+		tt.Name, tt.ID)
 
 	return handlePqErr(err)
+}
+
+// SaveComment will add a new Comment to the postgres DB
+func (ts *TicketStore) SaveComment(c *models.Comment) error {
+	_, err := ts.db.Exec(`UPDATE comments 
+						   SET (body, ticket_id, author_id) = ($1, $2, $3)
+						   WHERE id = $4`,
+		c.Body, c.TicketID, c.AuthorID, c.ID)
+
+	return handlePqErr(err)
+}
+
+// NewKey will generate the appropriate number for a ticket key
+func (ts *TicketStore) NewKey(projectID int) int {
+	var count int
+
+	err := ts.db.QueryRow(`SELECT COUNT(id) FROM tickets 
+						   WHERE project_id = $1`,
+		projectID).
+		Scan(&count)
+	if err != nil {
+		handlePqErr(err)
+		return 1
+	}
+
+	return count
 }
