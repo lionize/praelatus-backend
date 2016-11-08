@@ -77,10 +77,12 @@ type TicketStore interface {
 
 	GetAllComments(ticketID int) ([]models.Comment, error)
 
-	AddComment(ticketID int, comment *models.Comment) error
+	NewComment(comment *models.Comment) error
 	NewType(*models.TicketType) error
-
 	New(*models.Ticket) error
+
+	SaveComment(comment *models.Comment) error
+	SaveType(*models.TicketType) error
 	Save(*models.Ticket) error
 }
 
