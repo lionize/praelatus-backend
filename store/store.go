@@ -101,6 +101,7 @@ type TeamStore interface {
 // StatusStore contains methods for storing and retrieving Statuses
 type StatusStore interface {
 	Get(int64) (*models.Status, error)
+	GetAll() ([]models.Status, error)
 
 	New(*models.Status) error
 	Save(*models.Status) error
