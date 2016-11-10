@@ -32,7 +32,7 @@ func New(conn string, replicas ...string) store.Store {
 
 	d, err := sqlx.Open("postgres", conn)
 	if err != nil {
-		log.Panicln(err)
+		log.Panicln("Error connection:", err)
 	}
 
 	s := &Store{
@@ -51,7 +51,7 @@ func New(conn string, replicas ...string) store.Store {
 
 	err = migrations.RunMigrations(s.db)
 	if err != nil {
-		log.Panicln(err)
+		log.Panicln("Error migrating:", err)
 	}
 
 	return s
