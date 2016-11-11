@@ -16,7 +16,7 @@ func (ss *StatusStore) Get(ID int64) (*models.Status, error) {
 	var s models.Status
 	err := ss.db.QueryRowx("SELECT * FROM statuses WHERE id = $1;", ID).
 		StructScan(&s)
-	return &s, err
+	return &s, handlePqErr(err)
 }
 
 // GetAll gets all the labess from the database
@@ -29,13 +29,13 @@ func (ss *StatusStore) GetAll() ([]models.Status, error) {
 
 		err := rows.StructScan(&l)
 		if err != nil {
-			return statuses, err
+			return statuses, handlePqErr(err)
 		}
 
 		statuses = append(statuses, l)
 	}
 
-	return statuses, err
+	return statuses, handlePqErr(err)
 }
 
 // New creates a new Status in the postgres DB
@@ -51,5 +51,5 @@ func (ss *StatusStore) New(status *models.Status) error {
 // Save updates a Status in the postgres DB
 func (ss *StatusStore) Save(status *models.Status) error {
 	_, err := ss.db.Exec(`UPDATE statuses SET (name) = ($1);`, status.Name)
-	return err
+	return handlePqErr(err)
 }

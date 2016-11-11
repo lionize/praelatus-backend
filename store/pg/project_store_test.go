@@ -1,6 +1,9 @@
 package pg_test
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestProjectGet(t *testing.T) {
 	p, e := s.Projects().Get(1)
@@ -9,6 +12,8 @@ func TestProjectGet(t *testing.T) {
 	if p == nil {
 		t.Error("Expected a project and got nil instead.")
 	}
+
+	fmt.Println(p)
 }
 
 func TestProjectGetByKey(t *testing.T) {

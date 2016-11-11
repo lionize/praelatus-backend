@@ -16,7 +16,7 @@ func (ls *LabelStore) Get(ID int64) (*models.Label, error) {
 	var l models.Label
 	err := ls.db.QueryRowx("SELECT * FROM labels WHERE id = $1", ID).
 		StructScan(&l)
-	return &l, err
+	return &l, handlePqErr(err)
 }
 
 // GetAll gets all the labels from the database
@@ -29,13 +29,13 @@ func (ls *LabelStore) GetAll() ([]models.Label, error) {
 
 		err := rows.StructScan(&l)
 		if err != nil {
-			return labels, err
+			return labels, handlePqErr(err)
 		}
 
 		labels = append(labels, l)
 	}
 
-	return labels, err
+	return labels, handlePqErr(err)
 }
 
 // New creates a new label in the database

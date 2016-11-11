@@ -16,7 +16,7 @@ func (ws *WorkflowStore) Get(ID int64) (*models.Workflow, error) {
 	var w models.Workflow
 	err := ws.db.QueryRowx("SELECT * FROM workflows WHERE id = $1;", ID).
 		StructScan(&w)
-	return &w, err
+	return &w, handlePqErr(err)
 }
 
 // GetAll gets all the workflows from the database
@@ -29,13 +29,13 @@ func (ws *WorkflowStore) GetAll() ([]models.Workflow, error) {
 
 		err := rows.Scan(&w)
 		if err != nil {
-			return workflows, err
+			return workflows, handlePqErr(err)
 		}
 
 		workflows = append(workflows, w)
 	}
 
-	return workflows, err
+	return workflows, handlePqErr(err)
 }
 
 // New creates a new workflow in the database
@@ -56,5 +56,5 @@ func (ws *WorkflowStore) Save(workflow *models.Workflow) error {
 						  (name, project_id) = ($1, $2)`,
 		workflow.Name, workflow.ProjectID)
 
-	return err
+	return handlePqErr(err)
 }

@@ -16,7 +16,7 @@ func (ts *TransitionStore) Get(ID int64) (*models.Transition, error) {
 	var s models.Transition
 	err := ts.db.QueryRowx("SELECT * FROM transitions WHERE id = $1", ID).
 		StructScan(&s)
-	return &s, err
+	return &s, handlePqErr(err)
 }
 
 // New will create a new Transition in the postgres DB.
@@ -38,5 +38,5 @@ func (ts *TransitionStore) Save(transition *models.Transition) error {
 						  WHERE id = $4`,
 		transition.Name, transition.WorkflowID,
 		transition.StatusID, transition.ID)
-	return err
+	return handlePqErr(err)
 }

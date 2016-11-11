@@ -1,6 +1,7 @@
 package pg
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -18,8 +19,12 @@ func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := ts.db.QueryRowx("SELECT * FROM tickets WHERE id = $1;", ID).
 		StructScan(&t)
+	if err != nil {
+		return &t, handlePqErr(err)
+	}
 
-	return &t, err
+	err = ts.GetFieldValues(&t)
+	return &t, handlePqErr(err)
 }
 
 // GetAll gets all the Tickets from the database.
@@ -28,7 +33,7 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 
 	rows, err := ts.db.Queryx("SELECT * FROM tickets;")
 	if err != nil {
-		return tickets, err
+		return tickets, handlePqErr(err)
 	}
 
 	for rows.Next() {
@@ -36,7 +41,7 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 
 		err = rows.StructScan(&t)
 		if err != nil {
-			return tickets, err
+			return tickets, handlePqErr(err)
 		}
 
 		tickets = append(tickets, t)
@@ -60,8 +65,37 @@ func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
 						    tickets.key = $3;`,
 		teamSlug, projectKey, ticketKey).
 		StructScan(&t)
+	if err != nil {
+		return &t, handlePqErr(err)
+	}
 
-	return &t, err
+	err = ts.GetFieldValues(&t)
+	return &t, handlePqErr(err)
+}
+
+// GetFieldValues gets all of the fields and associated values for a given
+// ticket
+func (ts *TicketStore) GetFieldValues(t *models.Ticket) error {
+	rows, err := ts.db.Queryx(`SELECT f.id, f.name, f.data_type, fv.value 
+						   FROM field_values as fv
+						   JOIN fields AS f ON f.id = fv.field_id
+						   WHERE ticket_id = $1`, t.ID)
+	if err != nil {
+		return handlePqErr(err)
+	}
+
+	for rows.Next() {
+		var fv models.FieldValue
+
+		err = rows.StructScan(&fv)
+		if err != nil {
+			return handlePqErr(err)
+		}
+
+		t.Fields = append(t.Fields, fv)
+	}
+
+	return nil
 }
 
 // Save will update an existing ticket in the postgres DB
@@ -92,24 +126,42 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 }
 
 // GetAllComments will return all comments for a ticket based on it's ID
-func (ts *TicketStore) GetAllComments(ticketID int) ([]models.Comment, error) {
+func (ts *TicketStore) GetAllComments(ticket *models.Ticket) ([]models.Comment, error) {
 	var comments []models.Comment
 
-	rows, err := ts.db.Queryx(`SELECT * FROM comments WHERE ticket_id = $1`, ticketID)
+	rows, err := ts.db.Queryx(`SELECT *, row_to_json(user.*) as author 
+							   FROM comments 
+							   JOIN users ON users.id = comments.author_id
+							   WHERE ticket_id = $1`, ticket.ID)
 
 	if err != nil {
-		return comments, err
+		return comments, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var c models.Comment
+		var c struct {
+			ID     int64           `db:"id"`
+			Body   string          `db:"body"`
+			Author json.RawMessage `db:"author"`
+		}
 
 		err := rows.StructScan(&c)
 		if err != nil {
-			return comments, err
+			return comments, handlePqErr(err)
 		}
 
-		comments = append(comments, c)
+		var author models.User
+
+		err = json.Unmarshal(c.Author, &author)
+		if err != nil {
+			return comments, handlePqErr(err)
+		}
+
+		comments = append(comments, models.Comment{
+			ID:     c.ID,
+			Body:   c.Body,
+			Author: author,
+		})
 	}
 
 	return comments, nil
