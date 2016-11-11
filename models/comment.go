@@ -6,3 +6,7 @@ type Comment struct {
 	Body   string `json:"body"`
 	Author User   `json:"author"`
 }
+
+func (c *Comment) String() string {
+	return jsonString(c)
+}

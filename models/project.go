@@ -25,6 +25,10 @@ type Project struct {
 	Team        User      `json:"team"`
 }
 
+func (p *Project) String() string {
+	return jsonString(p)
+}
+
 // Permission is used to control user access to teams and projects.
 type Permission struct {
 	ID          int64           `json:"id"`

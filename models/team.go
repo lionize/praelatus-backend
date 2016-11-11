@@ -12,6 +12,10 @@ type Team struct {
 	Lead     User   `json:"lead"`
 }
 
+func (t *Team) String() string {
+	return jsonString(t)
+}
+
 // NewTeam makes a new team generating the slug based on it's name.
 func NewTeam(name, homepage, iconURL string) Team {
 	slug := strings.ToLower(name)

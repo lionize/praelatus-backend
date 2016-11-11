@@ -23,6 +23,10 @@ type Ticket struct {
 	Status      Status     `json:"status"`
 }
 
+func (t *Ticket) String() string {
+	return jsonString(t)
+}
+
 // Status represents a ticket's current status.
 type Status struct {
 	ID   int64  `json:"id"`

@@ -21,12 +21,20 @@ type Field struct {
 	DataType string `json:"data_type"`
 }
 
+func (f *Field) String() string {
+	return jsonString(f)
+}
+
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
 	*Field
 
 	// Value holds the raw JSONB from the db
 	Value interface{} `json:"value"`
+}
+
+func (f *FieldValue) String() string {
+	return jsonString(f)
 }
 
 func isValidDataType(dt string) bool {
