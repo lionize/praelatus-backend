@@ -1,16 +1,16 @@
 package pg
 
 import (
+	"database/sql"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
 
 // TicketStore contains methods for storing and retrieving Tickets from
 // Postgres DB
 type TicketStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a Ticket from a postgres DB by it's ID

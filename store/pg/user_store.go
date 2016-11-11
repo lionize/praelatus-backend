@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // UserStore contains methods for storing and retrieving Users from a Postgres
 // DB
 type UserStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get retrieves the user by row id
