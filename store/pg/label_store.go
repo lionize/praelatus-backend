@@ -28,7 +28,7 @@ func (ls *LabelStore) GetAll() ([]models.Label, error) {
 	for rows.Next() {
 		var l models.Label
 
-		err := rows.Scan(&l)
+		err := rows.StructScan(&l)
 		if err != nil {
 			return labels, err
 		}
@@ -51,8 +51,8 @@ func (ls *LabelStore) New(label *models.Label) error {
 
 // Save updates a label in the database
 func (ls *LabelStore) Save(label *models.Label) error {
-	_, err := ls.db.Exec(`UPDATE labels VALUES (name) = ($1) 
-						   WHERE id = $2;`, label.Name, label.ID)
+	_, err := ls.db.Exec(`UPDATE labels SET (name) = ($1) 
+						  WHERE id = $2;`, label.Name, label.ID)
 
 	return handlePqErr(err)
 }
