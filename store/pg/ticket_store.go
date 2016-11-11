@@ -13,11 +13,32 @@ type TicketStore struct {
 	db *sql.DB
 }
 
+func populateFields(t *models.Ticket, db *sql.DB) {
+	rows := db.Query(`
+		SELECT fv.id, f.name, f.data_type, f.value
+		FROM field_values AS fv
+		JOIN fields AS f ON f.id = fv.field_id
+		WHERE fv.ticket_id = $1`, t.ID)
+
+	for rows.Next() {
+		var fv *models.FieldValue
+
+		err = rows.Scan(fv.ID, fv.Name, fv.DataType, fv.Value)
+		if err != nil {
+			return t, err
+		}
+
+		t.Fields = append(t.Fields, *fv)
+	}
+}
+
 // Get gets a Ticket from a postgres DB by it's ID
 func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 	var t models.Ticket
 	err := ts.db.QueryRowx("SELECT * FROM tickets WHERE id = $1;", ID).
 		StructScan(&t)
+
+	populateFields(&t, ts.db)
 
 	return &t, err
 }
