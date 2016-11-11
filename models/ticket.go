@@ -10,17 +10,17 @@ type TicketType struct {
 
 // Ticket represents a ticket
 type Ticket struct {
-	ID          int64      `json:"id"`
-	CreatedDate time.Time  `json:"created_date"`
-	UpdatedDate time.Time  `json:"updated_date"`
-	Key         string     `json:"key"`
-	Summary     string     `json:"summary"`
-	Description string     `json:"description"`
-	Fields      []Field    `json:"fields"`
-	Type        TicketType `json:"ticket_type"`
-	Reporter    User       `json:"reporter"`
-	Assignee    User       `json:"assignee"`
-	Status      Status     `json:"status"`
+	ID          int64        `json:"id"`
+	CreatedDate time.Time    `json:"created_date"`
+	UpdatedDate time.Time    `json:"updated_date"`
+	Key         string       `json:"key"`
+	Summary     string       `json:"summary"`
+	Description string       `json:"description"`
+	Fields      []FieldValue `json:"fields"`
+	Type        TicketType   `json:"ticket_type"`
+	Reporter    User         `json:"reporter"`
+	Assignee    User         `json:"assignee"`
+	Status      Status       `json:"status"`
 }
 
 func (t *Ticket) String() string {
