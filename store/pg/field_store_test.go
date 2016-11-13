@@ -56,7 +56,11 @@ func TestFieldGetAll(t *testing.T) {
 }
 
 func TestFieldGetByProject(t *testing.T) {
-	f, e := s.Fields().GetByProject(1)
+	p := &models.Project{
+		ID: 1,
+	}
+
+	f, e := s.Fields().GetByProject(p)
 	failIfErr("Field Get By Project", t, e)
 
 	if f == nil {

@@ -26,7 +26,7 @@ func (f *FieldStore) Get(id int64) (*models.Field, error) {
 
 // GetByProject retrieves all Fields associated with a project by the project's
 // ID
-func (f *FieldStore) GetByProject(projectID int64) ([]models.Field, error) {
+func (f *FieldStore) GetByProject(p *models.Project) ([]models.Field, error) {
 	var fields []models.Field
 
 	rows, err := f.db.Queryx(
@@ -34,7 +34,7 @@ func (f *FieldStore) GetByProject(projectID int64) ([]models.Field, error) {
 		fields
 		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
 		WHERE ftp.project_id = $1;`,
-		projectID)
+		p.ID)
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
@@ -77,13 +77,15 @@ func (f *FieldStore) GetAll() ([]models.Field, error) {
 }
 
 // AddToProject adds a field to a project's tickets
-func (f *FieldStore) AddToProject(fieldID, projectID int64, ticketTypes ...int64) error {
+func (f *FieldStore) AddToProject(field *models.field, project *models.Project,
+	ticketTypes ...models.TicketType) error {
+
 	if ticketTypes != nil {
-		for _, typID := range ticketTypes {
+		for _, typ := range ticketTypes {
 
 			_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
 						(field_id, project_id, ticket_type_id) VALUES ($1, $2, $3);`,
-				fieldID, projectID, typID)
+				field.ID, project.ID, typ.ID)
 			if err != nil {
 				return handlePqErr(err)
 			}
@@ -94,7 +96,7 @@ func (f *FieldStore) AddToProject(fieldID, projectID int64, ticketTypes ...int64
 
 	_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
 						(field_id, project_id) VALUES ($1, $2);`,
-		fieldID, projectID)
+		field.ID, project.ID)
 	return handlePqErr(err)
 }
 
