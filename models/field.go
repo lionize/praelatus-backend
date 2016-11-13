@@ -1,9 +1,6 @@
 package models
 
-import (
-	"encoding/json"
-	"errors"
-)
+import "errors"
 
 var ErrInvalidDataType = errors.New("Invalid data type for field")
 
@@ -16,18 +13,17 @@ var DataTypes = []string{
 
 // Field is a ticket field
 type Field struct {
-	ID       int64  `json:"id" db:"id"`
-	Name     string `json:"name" db:"name"`
-	DataType string `json:"data_type" db:"data_type"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	DataType string `json:"data_type"`
 }
 
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
-	FieldID  int64 `json:"-" db:"field_id"`
-	TicketID int64 `json:"-" db:"ticket_id"`
-
-	// Value holds the raw JSONB from the db
-	Value json.RawMessage `db:"value"`
+	ID       int64       `json:"id"`
+	Name     string      `json:"name"`
+	DataType string      `json:"data_type"`
+	Value    interface{} `json:"value"`
 }
 
 func isValidDataType(dt string) bool {
