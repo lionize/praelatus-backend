@@ -2,27 +2,25 @@ package models
 
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
-	ID        int64  `json:"id"`
-	Name      string `json:"name"`
-	ProjectID int64  `json:"-" db:"project_id"`
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (w *Workflow) String() string {
+	return jsonString(w)
 }
 
 // Transition contains information about what hooks to perform when performing
 // a transition
 type Transition struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-
-	WorkflowID int64 `json:"-" db:"workflow_id"`
-	StatusID   int64 `json:"-" db:"status_id"`
+	ID       int64    `json:"id"`
+	Name     string   `json:"name"`
+	ToStatus Status   `json:"to_status"`
+	Workflow Workflow `json:"workflow,omitempty"`
 }
 
-// TransitionJSON contains additional information for when we are turning a
-// Transition into JSON
-type TransitionJSON struct {
-	Transition
-
-	ToStatus Status `json:"to_status"`
+func (t *Transition) String() string {
+	return jsonString(t)
 }
 
 // Hook contains information about what webhooks to fire when a given

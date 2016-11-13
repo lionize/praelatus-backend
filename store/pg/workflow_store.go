@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // WorkflowStore contains methods for saving/retrieving workflows from a
 // postgres DB
 type WorkflowStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a workflow from the database by it's ID

@@ -21,7 +21,8 @@ type Project struct {
 	Homepage    string    `json:"homepage"`
 	IconURL     string    `json:"icon_url"`
 	Repo        string    `json:"repo,omitempty"`
-	Team        Team      `json:"team"`
+	Lead        User      `json:"lead"`
+	Team        User      `json:"team"`
 }
 
 func (p *Project) String() string {
@@ -34,10 +35,5 @@ type Permission struct {
 	CreatedDate time.Time       `json:"created_date"`
 	UpdatedDate time.Time       `json:"updated_date"`
 	Level       PermissionLevel `json:"level"`
-	Project     Project         `json:"project"`
 	User        User            `json:"user"`
-}
-
-func (p *Permission) String() string {
-	return jsonString(p)
 }

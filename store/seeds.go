@@ -61,17 +61,14 @@ func SeedTickets(s Store) error {
 	fmt.Println("Seeding tickets")
 	for i := 0; i < 50; i++ {
 		t := &models.Ticket{
-			Key:          "TEST-" + strconv.Itoa(s.Tickets().NewKey(1)),
-			Summary:      "This is a test ticket. #" + strconv.Itoa(i),
-			Description:  "No really, this is just a test",
-			ProjectID:    1,
-			TicketTypeID: 1,
-			ReporterID:   2,
-			AssigneeID:   1,
-			StatusID:     1,
+			Summary:     "This is a test ticket. #" + strconv.Itoa(i),
+			Description: "No really, this is just a test",
+			Reporter:    models.User{ID: 1},
+			Assignee:    models.User{ID: 1},
+			Type:        models.TicketType{ID: 1},
 		}
 
-		e := s.Tickets().New(t)
+		e := s.Tickets().New(&models.Project{ID: 1}, t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}

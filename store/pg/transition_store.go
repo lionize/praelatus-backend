@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // TransitionStore contains methods for storing and retrieving Transitions from
 // a Postgres DB
 type TransitionStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a transition by it's ID from a postgres DB.

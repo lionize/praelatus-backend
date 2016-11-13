@@ -1,18 +1,15 @@
 package pg
 
 import (
-	"encoding/json"
-	"fmt"
-	"time"
+	"database/sql"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
 
 // ProjectStore contains methods for storing and retrieving Projects from a
 // Postgres DB
 type ProjectStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a project by it's ID in a postgres DB.

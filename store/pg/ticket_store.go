@@ -1,17 +1,35 @@
 package pg
 
 import (
-	"encoding/json"
+	"database/sql"
 	"time"
 
-	"github.com/jmoiron/sqlx"
 	"github.com/praelatus/backend/models"
 )
 
 // TicketStore contains methods for storing and retrieving Tickets from
 // Postgres DB
 type TicketStore struct {
-	db *sqlx.DB
+	db *sql.DB
+}
+
+func populateFields(t *models.Ticket, db *sql.DB) {
+	rows := db.Query(`
+		SELECT fv.id, f.name, f.data_type, f.value
+		FROM field_values AS fv
+		JOIN fields AS f ON f.id = fv.field_id
+		WHERE fv.ticket_id = $1`, t.ID)
+
+	for rows.Next() {
+		var fv *models.FieldValue
+
+		err = rows.Scan(fv.ID, fv.Name, fv.DataType, fv.Value)
+		if err != nil {
+			return t, err
+		}
+
+		t.Fields = append(t.Fields, *fv)
+	}
 }
 
 // Get gets a Ticket from a postgres DB by it's ID
@@ -23,8 +41,9 @@ func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
 		return &t, handlePqErr(err)
 	}
 
-	err = ts.GetFieldValues(&t)
-	return &t, handlePqErr(err)
+	populateFields(&t, ts.db)
+
+	return &t, err
 }
 
 // GetAll gets all the Tickets from the database.

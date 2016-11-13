@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // LabelStore contains methods for storing and retrieving Labels from a
 // Postgres DB
 type LabelStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a label from the database by it's ID

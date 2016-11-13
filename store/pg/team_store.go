@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // TeamStore contains methods for storing and retrieving Teams from a Postgres
 // DB
 type TeamStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get retrieves a team from the database based on ID

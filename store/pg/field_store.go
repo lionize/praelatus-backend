@@ -1,53 +1,51 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // FieldStore contains methods for storing and retrieving Fields and
 // FieldValues in a Postgres Database
 type FieldStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get retrieves a models.Field by ID
 func (f *FieldStore) Get(id int64) (*models.Field, error) {
-	var field struct {
-		ID       int64  `db:"id"`
-		Name     string `db:"name"`
-		DataType string `db:"data_type"`
-	}
+	var field models.Field
 
-	err := f.db.QueryRowx("SELECT * FROM fields WHERE id = $1;", id).
-		StructScan(&field)
-	return &models.Field{f}, handlePqErr(err)
+	row := f.db.QueryRow(`SELECT id, name, data_type 
+						   FROM fields WHERE id = $1;`, id)
+	err := row.Scan(&field.ID, &field.Name, &field.DataType)
+
+	return &field, err
 }
 
-// GetByProject retrieves all Fields associated with a project by the project's
-// ID
+// GetByProject retrieves all Fields associated with a project
 func (f *FieldStore) GetByProject(p *models.Project) ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Queryx(
-		`SELECT fields.id, fields.name, fields.data_type FROM 
-		fields
+	rows, err := f.db.Query(`
+		SELECT fields.id, fields.name, fields.data_type 
+		FROM fields
 		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
-		WHERE ftp.project_id = $1;`,
-		p.ID)
+		WHERE ftp.project_id = $1;`, p.ID)
+
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var field models.Field
+		var f *models.Field
 
-		err = rows.StructScan(&field)
+		err = rows.Scan(f.ID, f.Name, f.DataType)
 		if err != nil {
 			return fields, handlePqErr(err)
 		}
 
-		fields = append(fields, field)
+		fields = append(fields, *field)
 	}
 
 	return fields, nil
@@ -57,20 +55,20 @@ func (f *FieldStore) GetByProject(p *models.Project) ([]models.Field, error) {
 func (f *FieldStore) GetAll() ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Queryx("SELECT * FROM fields;")
+	rows, err := f.db.Queryx("SELECT id, name, data_type FROM fields;")
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var field models.Field
+		var f *models.Field
 
-		err = rows.StructScan(&field)
+		err = rows.Scan(&f.ID, f.Name, f.DataType)
 		if err != nil {
 			return fields, handlePqErr(err)
 		}
 
-		fields = append(fields, field)
+		fields = append(fields, *field)
 	}
 
 	return fields, nil

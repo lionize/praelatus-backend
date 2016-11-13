@@ -1,14 +1,15 @@
 package pg
 
 import (
-	"github.com/jmoiron/sqlx"
+	"database/sql"
+
 	"github.com/praelatus/backend/models"
 )
 
 // StatusStore contains methods for storing and retrieving Statuses from a
 // Postgres DB
 type StatusStore struct {
-	db *sqlx.DB
+	db *sql.DB
 }
 
 // Get gets a Status by it's ID in a postgres DB
