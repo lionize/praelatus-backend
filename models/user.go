@@ -5,7 +5,8 @@ import (
 	"encoding/hex"
 	"strings"
 
-	log "github.com/iamthemuffinman/logsip"
+	"log"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,7 +30,7 @@ func (u *User) CheckPw(pw []byte) bool {
 		return true
 	}
 
-	log.Error(err)
+	log.Println(err)
 	return false
 }
 

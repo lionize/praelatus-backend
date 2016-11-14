@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	log "github.com/iamthemuffinman/logsip"
+	"log"
 	"github.com/praelatus/backend/api"
 )
 

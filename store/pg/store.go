@@ -3,8 +3,8 @@ package pg
 import (
 	"database/sql"
 
-	log "github.com/iamthemuffinman/logsip"
-	"github.com/jmoiron/sqlx"
+	"log"
+
 	"github.com/lib/pq"
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg/migrations"
@@ -12,8 +12,8 @@ import (
 
 // Store implements the store.Store and store.SQLStore interface for a postgres DB.
 type Store struct {
-	db          *sqlx.DB
-	replicas    []sqlx.DB
+	db          *sql.DB
+	replicas    []sql.DB
 	users       *UserStore
 	projects    *ProjectStore
 	fields      *FieldStore
@@ -30,14 +30,14 @@ type Store struct {
 func New(conn string, replicas ...string) store.Store {
 	// TODO: replica support
 
-	d, err := sqlx.Open("postgres", conn)
+	d, err := sql.Open("postgres", conn)
 	if err != nil {
 		log.Panicln("Error connection:", err)
 	}
 
 	s := &Store{
 		db:          d,
-		replicas:    []sqlx.DB{},
+		replicas:    []sql.DB{},
 		users:       &UserStore{d},
 		projects:    &ProjectStore{d},
 		fields:      &FieldStore{d},
@@ -123,7 +123,7 @@ func handlePqErr(e error) error {
 		return e
 	}
 
-	log.Error(e)
+	"log.Println"(e)
 
 	// fmt.Println("PQ ERROR CODE:", pqe.Code)
 	if pqe.Code == "23505" {

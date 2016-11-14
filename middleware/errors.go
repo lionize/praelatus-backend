@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/iamthemuffinman/logsip"
+	"log"
 )
 
 var (
@@ -28,6 +28,6 @@ func middlewareErr(w http.ResponseWriter, r *http.Request, e error, s time.Time)
 
 	w.WriteHeader(status)
 	w.Write([]byte(e.Error()))
-	log.Errorf("|%s| [%d] %s %s",
+	"log.Printf"("|%s| [%d] %s %s",
 		r.Method, status, r.URL.Path, time.Since(s).String())
 }
