@@ -12,26 +12,29 @@ type UserStore struct {
 	db *sql.DB
 }
 
-// Get retrieves the user by row id
-func (s *UserStore) Get(ID int64) (*models.User, error) {
-	var u models.User
-	err := s.db.QueryRowx("SELECT * FROM users WHERE id = $1;", ID).
-		StructScan(&u)
-	return &u, handlePqErr(err)
+func intoUser(row rowScanner, u *models.User) error {
+	return row.Scan(&u.ID, &u.Username, &u.Password, &u.Email, &u.FullName,
+		&u.Gravatar, &u.ProfilePic, &u.IsAdmin)
 }
 
-// GetByUsername will retrieve the user by the given username.
-func (s *UserStore) GetByUsername(un string) (*models.User, error) {
-	var u models.User
-	err := s.db.QueryRowx("SELECT * FROM users WHERE username = $1;", un).
-		StructScan(&u)
-	return &u, handlePqErr(err)
+// Get retrieves the user by row id
+func (s *UserStore) Get(u *models.User) error {
+	var row *sql.Row
+
+	row = s.db.QueryRow(`SELECT id, username, password, email, full_name, 
+								gravatar, profile_picture, is_admin 
+						 WHERE id = $1
+						 OR username = $2`, u.ID, u.Username)
+
+	return handlePqErr(intoUser(row, u))
 }
 
 // GetAll retrieves all users from the database.
 func (s *UserStore) GetAll() ([]models.User, error) {
 	users := []models.User{}
-	rows, err := s.db.Queryx("SELECT * FROM users;")
+	rows, err := s.db.Query(`SELECT id, username, password, email, full_name, 
+								    gravatar, profile_picture, is_admin 
+							 FROM users`)
 	if err != nil {
 		return users, handlePqErr(err)
 	}
@@ -39,7 +42,7 @@ func (s *UserStore) GetAll() ([]models.User, error) {
 	for rows.Next() {
 		var u models.User
 
-		err := rows.StructScan(&u)
+		err := intoUser(rows, &u)
 		if err != nil {
 			return users, handlePqErr(err)
 		}
@@ -51,7 +54,7 @@ func (s *UserStore) GetAll() ([]models.User, error) {
 }
 
 // Save will update the given user into the database.
-func (s *UserStore) Save(u *models.User) error {
+func (s *UserStore) Save(u models.User) error {
 	if u.Password == "" {
 		_, err := s.db.Exec(`UPDATE users SET 
 		(username, email, full_name, is_admin) = (?, ?, ?, ?) WHERE id = ?;`,
