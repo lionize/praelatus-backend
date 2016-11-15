@@ -68,7 +68,7 @@ func SeedTickets(s Store) error {
 			Type:        models.TicketType{ID: 1},
 		}
 
-		e := s.Tickets().New(&models.Project{ID: 1}, t)
+		e := s.Tickets().New(models.Project{ID: 1}, t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
@@ -118,11 +118,10 @@ func SeedComments(s Store) error {
 				**I** *heard* you
 				> like markdown
 				so I put markdown in your comments`, x),
-				TicketID: tk.ID,
-				AuthorID: 1,
+				Author: models.User{ID: 1},
 			}
 
-			e := s.Tickets().NewComment(c)
+			e := s.Tickets().NewComment(tk, c)
 			if e != nil && e != ErrDuplicateEntry {
 				return e
 			}
@@ -169,7 +168,7 @@ func SeedFields(s Store) error {
 			continue
 		}
 
-		e = s.Fields().AddToProject(f.ID, 1)
+		e = s.Fields().AddToProject(models.Project{ID: 1}, &f)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
@@ -186,16 +185,14 @@ func SeedFields(s Store) error {
 func SeedProjects(s Store) error {
 	projects := []models.Project{
 		models.Project{
-			Name:   "TEST Project",
-			Key:    "TEST",
-			TeamID: 1,
-			LeadID: 1,
+			Name: "TEST Project",
+			Key:  "TEST",
+			Lead: models.User{ID: 1},
 		},
 		models.Project{
-			Name:   "TEST Project 2",
-			Key:    "TEST2",
-			TeamID: 1,
-			LeadID: 2,
+			Name: "TEST Project 2",
+			Key:  "TEST2",
+			Lead: models.User{ID: 2},
 		},
 	}
 
@@ -217,13 +214,23 @@ func SeedProjects(s Store) error {
 // SeedTeams will seed the database with some test Teams.
 func SeedTeams(s Store) error {
 	teams := []models.Team{
-		models.NewTeam("The A Team", "", ""),
-		models.NewTeam("The B Team", "", ""),
+		models.Team{
+			Name: "The A Team",
+			Lead: models.User{
+				ID: 1,
+			},
+		},
+		models.Team{
+			Name: "The B Team",
+			Lead: models.User{
+				ID: 2,
+			},
+		},
 	}
 
 	fmt.Println("Seeding teams")
 	for _, team := range teams {
-		team.LeadID = 1
+		team.Lead = models.User{ID: 1}
 
 		e := s.Teams().New(&team)
 		if e != nil && e != ErrDuplicateEntry {
@@ -260,7 +267,7 @@ func SeedTicketTypes(s Store) error {
 
 	fmt.Println("Seeding ticket types")
 	for _, t := range types {
-		e := s.Tickets().NewType(&t)
+		e := s.Types().New(&t)
 		if e != nil && e != ErrDuplicateEntry {
 			return e
 		}
