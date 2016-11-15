@@ -15,31 +15,32 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS teams (
     id           SERIAL PRIMARY KEY,
     name         varchar(40) NOT NULL,
-    url_slug     varchar(80) NOT NULL,
-    homepage     varchar(250),
-    icon_url     varchar(250),
 
     lead_id integer REFERENCES users (id)
+);
+
+CREATE TABLE IF NOT EXISTS teams_users (
+	id SERIAL PRIMARY KEY,
+
+	team_id integer REFERENCES teams (id) NOT NULL,
+	user_id integer REFERENCES users (id) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS projects (
     id              SERIAL PRIMARY KEY,
 	created_date    timestamp DEFAULT current_timestamp,
     name            varchar(250) NOT NULL,
-    key				varchar(40) NOT NULL,
+    key				varchar(40) NOT NULL UNIQUE,
     repo			varchar(250),
     homepage        varchar(250),
     icon_url        varchar(250),
 
     lead_id			integer REFERENCES users (id) NOT NULL,
-    team_id         integer REFERENCES teams (id) NOT NULL,
-
-	CONSTRAINT team_pkey UNIQUE (key, team_id)
 );
 
 CREATE TABLE IF NOT EXISTS statuses (
     id   SERIAL PRIMARY KEY,
-    name varchar(250) 
+    name varchar(250) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS workflows (
@@ -54,6 +55,7 @@ CREATE TABLE IF NOT EXISTS transitions (
 	name		varchar(250),
 
     workflow_id integer REFERENCES workflows (id),
+    from_status integer REFERENCES statuses (id)
     status_id   integer REFERENCES statuses (id)
 );
 
@@ -64,8 +66,9 @@ CREATE TABLE IF NOT EXISTS transitions_to_statuses (
 
 CREATE TABLE IF NOT EXISTS hooks (
     id            SERIAL PRIMARY KEY,
-    body          text,
-    delivery      varchar(20),
+	endpoint      varchar(250),
+	method        varchar(10),
+	body          text,
 
     transition_id integer REFERENCES transitions (id)
 );
@@ -121,8 +124,8 @@ CREATE TABLE IF NOT EXISTS database_information (
 CREATE TABLE IF NOT EXISTS comments (
 	id SERIAL PRIMARY KEY,
 	body text,
-	author_id integer REFERENCES users (id),
-	ticket_id integer REFERENCES tickets (id)
+	author_id integer REFERENCES users (id) NOT NULL,
+	ticket_id integer REFERENCES tickets (id) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS labels (
