@@ -2,8 +2,9 @@ package models
 
 // Workflow is the container for issues and keeps track of available transitions
 type Workflow struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Transitions map[string][]Transition
 }
 
 func (w *Workflow) String() string {
@@ -13,10 +14,10 @@ func (w *Workflow) String() string {
 // Transition contains information about what hooks to perform when performing
 // a transition
 type Transition struct {
-	ID       int64    `json:"id"`
-	Name     string   `json:"name"`
-	ToStatus Status   `json:"to_status"`
-	Workflow Workflow `json:"workflow,omitempty"`
+	ID       int64  `json:"id"`
+	Name     string `json:"name"`
+	ToStatus Status `json:"to_status"`
+	Hooks    []Hook `json:"hooks"`
 }
 
 func (t *Transition) String() string {
@@ -25,4 +26,13 @@ func (t *Transition) String() string {
 
 // Hook contains information about what webhooks to fire when a given
 // transition is run.
-type Hook struct{}
+type Hook struct {
+	ID       int64  `json:""`
+	Endpoint string `json:"endpoint"`
+	Method   string `json:"method"`
+	Body     string `json:"body"`
+}
+
+func (h *Hook) String() string {
+	return jsonString(h)
+}
