@@ -2,9 +2,12 @@ package pg
 
 import (
 	"database/sql"
+	"encoding/json"
+	"strconv"
 	"time"
 
 	"github.com/praelatus/backend/models"
+	"github.com/praelatus/backend/store"
 )
 
 // TicketStore contains methods for storing and retrieving Tickets from
@@ -13,44 +16,120 @@ type TicketStore struct {
 	db *sql.DB
 }
 
-func populateFields(t *models.Ticket, db *sql.DB) {
-	rows := db.Query(`
+func populateFields(db *sql.DB, t *models.Ticket) error {
+	rows, err := db.Query(`
 		SELECT fv.id, f.name, f.data_type, f.value
 		FROM field_values AS fv
 		JOIN fields AS f ON f.id = fv.field_id
 		WHERE fv.ticket_id = $1`, t.ID)
+	if err != nil {
+		return err
+	}
 
 	for rows.Next() {
 		var fv *models.FieldValue
 
 		err = rows.Scan(fv.ID, fv.Name, fv.DataType, fv.Value)
 		if err != nil {
-			return t, err
+			return err
 		}
 
 		t.Fields = append(t.Fields, *fv)
 	}
+
+	return nil
+}
+
+func intoTicket(row rowScanner, db *sql.DB, t *models.Ticket) error {
+	var ajson, rjson, sjson, tjson json.RawMessage
+
+	err := row.Scan(&t.ID, &t.Key, &t.CreatedDate, &t.UpdatedDate, &t.Summary,
+		&t.Description, &ajson, &rjson, &sjson, &tjson)
+
+	dberr := make(chan error)
+	done := make(chan struct{})
+	defer close(done)
+
+	go func() {
+		defer close(dberr)
+		select {
+		case dberr <- populateFields(db, t):
+		case <-done:
+			return
+		}
+	}()
+
+	err = json.Unmarshal(ajson, &t.Assignee)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
+
+	err = json.Unmarshal(rjson, &t.Reporter)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
+
+	err = json.Unmarshal(sjson, &t.Status)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
+
+	err = json.Unmarshal(tjson, &t.Type)
+	if err != nil {
+		done <- struct{}{}
+		return err
+	}
+
+	err = <-dberr
+	return handlePqErr(err)
 }
 
 // Get gets a Ticket from a postgres DB by it's ID
-func (ts *TicketStore) Get(ID int64) (*models.Ticket, error) {
-	var t models.Ticket
-	err := ts.db.QueryRowx("SELECT * FROM tickets WHERE id = $1;", ID).
-		StructScan(&t)
-	if err != nil {
-		return &t, handlePqErr(err)
+func (ts *TicketStore) Get(p models.Project, t *models.Ticket) error {
+
+	if p.Key == "" {
+		return store.ErrNotFound
 	}
 
-	populateFields(&t, ts.db)
+	row := ts.db.QueryRow(`SELECT t.id, t.key, t.created_date, 
+									 t.updated_date, t.summary, t.description, 
+									 row_to_json(a.*) AS assignee, 
+									 row_to_json(r.*) AS reporter, 
+									 row_to_json(s.*) AS status, 
+									 row_to_json(tt.*) AS ticket_type 
+							  FROM tickets AS t 
+							  JOIN users AS a ON a.id = t.assignee_id
+							  JOIN users AS r ON r.id = t.reporter_id
+							  JOIN statuses AS s ON s.id = t.status_id
+							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
+							  JOIN projects AS p ON p.id = t.project_id
+							  WHERE t.id = $1 OR
+							  (t.key = $2 AND
+							   p.key = $3)`, t.ID, t.Key, p.Key)
 
-	return &t, err
+	err := intoTicket(row, ts.db, t)
+	return handlePqErr(err)
 }
 
 // GetAll gets all the Tickets from the database.
 func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	var tickets []models.Ticket
 
-	rows, err := ts.db.Queryx("SELECT * FROM tickets;")
+	rows, err := ts.db.Query(`SELECT t.id, t.key, t.created_date, 
+									  t.updated_date, t.summary, t.description, 
+									  row_to_json(a.*) AS assignee, 
+									  row_to_json(r.*) AS reporter, 
+									  row_to_json(s.*) AS status, 
+									  row_to_json(tt.*) AS ticket_type 
+							  FROM tickets AS t 
+							  JOIN users AS a ON a.id = t.assignee_id
+							  JOIN users AS r ON r.id = t.reporter_id
+							  JOIN statuses AS s ON s.id = t.status_id
+							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
+							  FROM tickets`)
 	if err != nil {
 		return tickets, handlePqErr(err)
 	}
@@ -58,7 +137,7 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	for rows.Next() {
 		var t models.Ticket
 
-		err = rows.StructScan(&t)
+		err = intoTicket(rows, ts.db, &t)
 		if err != nil {
 			return tickets, handlePqErr(err)
 		}
@@ -69,66 +148,55 @@ func (ts *TicketStore) GetAll() ([]models.Ticket, error) {
 	return tickets, nil
 }
 
-// GetByKey will get a ticket by it's ticket key and project / team
-func (ts *TicketStore) GetByKey(teamSlug string, projectKey string,
-	ticketKey string) (*models.Ticket, error) {
+// GetAll gets all the Tickets from the database.
+func (ts *TicketStore) GetAllByProject(p models.Project) ([]models.Ticket, error) {
+	var tickets []models.Ticket
 
-	var t models.Ticket
-
-	err := ts.db.QueryRowx(`SELECT * FROM tickets 
-						    JOIN projects AS p ON p.id = tickets.project_id
-						    JOIN teams AS t ON t.id = p.team_id
-						    WHERE 
-						    t.url_slug = $1 AND
-						    p.key = $2 AND
-						    tickets.key = $3;`,
-		teamSlug, projectKey, ticketKey).
-		StructScan(&t)
+	rows, err := ts.db.Query(`SELECT t.id, t.key, t.created_date, 
+									  t.updated_date, t.summary, t.description, 
+									  row_to_json(a.*) AS assignee, 
+									  row_to_json(r.*) AS reporter, 
+									  row_to_json(s.*) AS status, 
+									  row_to_json(tt.*) AS ticket_type 
+							  FROM tickets AS t 
+							  JOIN users AS a ON a.id = t.assignee_id
+							  JOIN users AS r ON r.id = t.reporter_id
+							  JOIN projects AS p ON p.id = t.project_id
+							  JOIN statuses AS s ON s.id = t.status_id
+							  JOIN ticket_types AS tt ON tt.id = t.ticket_type_id
+							  FROM tickets
+							  WHERE p.id = $1
+							  OR p.key = $2`, p.ID, p.Key)
 	if err != nil {
-		return &t, handlePqErr(err)
-	}
-
-	err = ts.GetFieldValues(&t)
-	return &t, handlePqErr(err)
-}
-
-// GetFieldValues gets all of the fields and associated values for a given
-// ticket
-func (ts *TicketStore) GetFieldValues(t *models.Ticket) error {
-	rows, err := ts.db.Queryx(`SELECT f.id, f.name, f.data_type, fv.value 
-						   FROM field_values as fv
-						   JOIN fields AS f ON f.id = fv.field_id
-						   WHERE ticket_id = $1`, t.ID)
-	if err != nil {
-		return handlePqErr(err)
+		return tickets, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var fv models.FieldValue
+		var t models.Ticket
 
-		err = rows.StructScan(&fv)
+		err = intoTicket(rows, ts.db, &t)
 		if err != nil {
-			return handlePqErr(err)
+			return tickets, handlePqErr(err)
 		}
 
-		t.Fields = append(t.Fields, fv)
+		tickets = append(tickets, t)
 	}
 
-	return nil
+	return tickets, nil
 }
 
 // Save will update an existing ticket in the postgres DB
-func (ts *TicketStore) Save(ticket *models.Ticket) error {
+func (ts *TicketStore) Save(ticket models.Ticket) error {
 	// TODO update fields?
 	_, err := ts.db.Exec(`UPDATE tickets SET 
 						  (summary, description, updated_date) = ($1, $2, $3) 
-						  WHERE id = $4;`,
+						  WHERE id = $4`,
 		ticket.Summary, ticket.Description, time.Now(), ticket.ID)
 	return handlePqErr(err)
 }
 
 // New will add a new Ticket to the postgres DB
-func (ts *TicketStore) New(ticket *models.Ticket) error {
+func (ts *TicketStore) New(project models.Project, ticket *models.Ticket) error {
 	// TODO update fields?
 	err := ts.db.QueryRow(`INSERT INTO tickets 
 						   (summary, description, project_id, assignee_id, 
@@ -136,110 +204,85 @@ func (ts *TicketStore) New(ticket *models.Ticket) error {
 						   updated_date) 
 						   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 						   RETURNING id;`,
-		ticket.Summary, ticket.Description, ticket.ProjectID,
-		ticket.AssigneeID, ticket.ReporterID, ticket.TicketTypeID,
-		ticket.StatusID, ticket.Key, time.Now()).
+		ticket.Summary, ticket.Description, project.ID,
+		ticket.Assignee.ID, ticket.Reporter.ID, ticket.Type.ID,
+		ticket.Status.ID, ticket.Key, time.Now()).
 		Scan(&ticket.ID)
 
 	return handlePqErr(err)
 }
 
-// GetAllComments will return all comments for a ticket based on it's ID
-func (ts *TicketStore) GetAllComments(ticket *models.Ticket) ([]models.Comment, error) {
+// GetComments will return all comments for a ticket based on it's ID
+func (ts *TicketStore) GetComments(t models.Ticket) ([]models.Comment, error) {
 	var comments []models.Comment
 
-	rows, err := ts.db.Queryx(`SELECT *, row_to_json(user.*) as author 
-							   FROM comments 
-							   JOIN users ON users.id = comments.author_id
-							   WHERE ticket_id = $1`, ticket.ID)
+	rows, err := ts.db.Query(`SELECT c.id, c.body, row_to_json(users.*) as author 
+							  FROM comments AS c
+							  JOIN tickets AS t ON t.id = c.ticket_id
+							  JOIN users ON users.id = comments.author_id
+							  WHERE t.id = $1
+							  OR t.key = $2`, t.ID, t.Key)
 
 	if err != nil {
 		return comments, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var c struct {
-			ID     int64           `db:"id"`
-			Body   string          `db:"body"`
-			Author json.RawMessage `db:"author"`
-		}
+		var c models.Comment
+		var ajson json.RawMessage
 
-		err := rows.StructScan(&c)
+		err := rows.Scan(&c.ID, &c.Body, &ajson)
 		if err != nil {
 			return comments, handlePqErr(err)
 		}
 
-		var author models.User
-
-		err = json.Unmarshal(c.Author, &author)
+		err = json.Unmarshal(ajson, &c.Author)
 		if err != nil {
 			return comments, handlePqErr(err)
 		}
 
-		comments = append(comments, models.Comment{
-			ID:     c.ID,
-			Body:   c.Body,
-			Author: author,
-		})
+		comments = append(comments, c)
 	}
 
 	return comments, nil
 }
 
-// NewType will add a new TicketType to the postgres DB
-func (ts *TicketStore) NewType(tt *models.TicketType) error {
-	err := ts.db.QueryRow(`INSERT INTO ticket_types (name) 
-						   VALUES ($1)
-						   RETURNING id;`,
-		tt.Name).
-		Scan(&tt.ID)
-
-	return handlePqErr(err)
-}
-
 // NewComment will add a new Comment to the postgres DB
-func (ts *TicketStore) NewComment(c *models.Comment) error {
+func (ts *TicketStore) NewComment(t models.Ticket, c *models.Comment) error {
 	err := ts.db.QueryRow(`INSERT INTO comments 
 						   (body, ticket_id, author_id) 
 						   VALUES ($1, $2, $3)
-						   RETURNING id;`,
-		c.Body, c.TicketID, c.AuthorID).
+						   RETURNING id`,
+		c.Body, t.ID, c.Author.ID).
 		Scan(&c.ID)
 
 	return handlePqErr(err)
 }
 
-// SaveType will add a new TicketType to the postgres DB
-func (ts *TicketStore) SaveType(tt *models.TicketType) error {
-	_, err := ts.db.Exec(`UPDATE ticket_types 
-						   SET VALUES (name) = ($1)`,
-		tt.Name, tt.ID)
-
-	return handlePqErr(err)
-}
-
 // SaveComment will add a new Comment to the postgres DB
-func (ts *TicketStore) SaveComment(c *models.Comment) error {
+func (ts *TicketStore) SaveComment(c models.Comment) error {
 	_, err := ts.db.Exec(`UPDATE comments 
-						   SET (body, ticket_id, author_id) = ($1, $2, $3)
-						   WHERE id = $4`,
-		c.Body, c.TicketID, c.AuthorID, c.ID)
+						  SET (body, author_id) 
+						  = ($1, $3)
+						  WHERE id = $4`,
+		c.Body, c.Author.ID, c.ID)
 
 	return handlePqErr(err)
 }
 
-// NewKey will generate the appropriate number for a ticket key
-func (ts *TicketStore) NewKey(projectID int) int {
+// NextTicketKey will generate the appropriate number for a ticket key
+func (ts *TicketStore) NextTicketKey(p models.Project) string {
 	var count int
 
-	err := ts.db.QueryRow(`SELECT COUNT(id) FROM tickets 
-						   WHERE project_id = $1`,
-		projectID).
-		Scan(&count)
+	err := ts.db.QueryRow(`SELECT COUNT(t.id) 
+						   FROM tickets AS t
+						   JOIN projects AS p ON p.id = t.project_id
+						   WHERE p.id = $1 
+						   OR p.key = $2`, p.ID, p.Key).Scan(&count)
 	if err != nil {
 		handlePqErr(err)
-		return 1
+		return p.Key + strconv.Itoa(1)
 	}
 
-	return count
+	return p.Key + strconv.Itoa(count+1)
 }
