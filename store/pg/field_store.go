@@ -13,93 +13,97 @@ type FieldStore struct {
 }
 
 // Get retrieves a models.Field by ID
-func (f *FieldStore) Get(id int64) (*models.Field, error) {
-	var field models.Field
+func (fs *FieldStore) Get(f *models.Field) error {
+	var row *sql.Row
 
-	row := f.db.QueryRow(`SELECT id, name, data_type 
-						   FROM fields WHERE id = $1;`, id)
-	err := row.Scan(&field.ID, &field.Name, &field.DataType)
+	row = fs.db.QueryRow(`SELECT id, name, data_type 
+						  FROM fields 
+						  WHERE id = $1
+						  OR name = $2`, f.ID, f.Name)
 
-	return &field, err
-}
-
-// GetByProject retrieves all Fields associated with a project
-func (f *FieldStore) GetByProject(p *models.Project) ([]models.Field, error) {
-	var fields []models.Field
-
-	rows, err := f.db.Query(`
-		SELECT fields.id, fields.name, fields.data_type 
-		FROM fields
-		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
-		WHERE ftp.project_id = $1;`, p.ID)
-
-	if err != nil {
-		return fields, handlePqErr(err)
-	}
-
-	for rows.Next() {
-		var f *models.Field
-
-		err = rows.Scan(f.ID, f.Name, f.DataType)
-		if err != nil {
-			return fields, handlePqErr(err)
-		}
-
-		fields = append(fields, *field)
-	}
-
-	return fields, nil
+	err := row.Scan(&f.ID, &f.Name, &f.DataType)
+	return err
 }
 
 // GetAll will return all fields from the DB
 func (f *FieldStore) GetAll() ([]models.Field, error) {
 	var fields []models.Field
 
-	rows, err := f.db.Queryx("SELECT id, name, data_type FROM fields;")
+	rows, err := f.db.Query("SELECT id, name, data_type FROM fields;")
 	if err != nil {
 		return fields, handlePqErr(err)
 	}
 
 	for rows.Next() {
-		var f *models.Field
+		var f models.Field
 
-		err = rows.Scan(&f.ID, f.Name, f.DataType)
+		err = rows.Scan(&f.ID, &f.Name, &f.DataType)
 		if err != nil {
 			return fields, handlePqErr(err)
 		}
 
-		fields = append(fields, *field)
+		fields = append(fields, f)
+	}
+
+	return fields, nil
+}
+
+// GetByProject retrieves all Fields associated with a project
+func (f *FieldStore) GetByProject(p models.Project) ([]models.Field, error) {
+	var fields []models.Field
+
+	rows, err := f.db.Query(`
+		SELECT fields.id, fields.name, fields.data_type 
+		FROM fields
+		JOIN field_tickettype_project as ftp ON fields.id = ftp.field_id
+		WHERE ftp.key = $1;`, p.Key)
+
+	if err != nil {
+		return fields, handlePqErr(err)
+	}
+
+	for rows.Next() {
+		var f models.Field
+
+		err = rows.Scan(&f.ID, &f.Name, &f.DataType)
+		if err != nil {
+			return fields, handlePqErr(err)
+		}
+
+		fields = append(fields, f)
 	}
 
 	return fields, nil
 }
 
 // AddToProject adds a field to a project's tickets
-func (f *FieldStore) AddToProject(field *models.field, project *models.Project,
+func (f *FieldStore) AddToProject(project models.Project, field *models.Field,
 	ticketTypes ...models.TicketType) error {
 
-	if ticketTypes != nil {
-		for _, typ := range ticketTypes {
-
-			_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
-						(field_id, project_id, ticket_type_id) VALUES ($1, $2, $3);`,
-				field.ID, project.ID, typ.ID)
-			if err != nil {
-				return handlePqErr(err)
-			}
-		}
-
-		return nil
+	if ticketTypes == nil {
+		_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+							 (field_id, project_id) VALUES ($1, $2)`,
+			field.ID, project.ID)
+		return handlePqErr(err)
 	}
 
-	_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
-						(field_id, project_id) VALUES ($1, $2);`,
-		field.ID, project.ID)
-	return handlePqErr(err)
+	for _, typ := range ticketTypes {
+
+		_, err := f.db.Exec(`INSERT INTO field_tickettype_project 
+							 (field_id, project_id, ticket_type_id) 
+							 VALUES ($1, $2, $3)`,
+			field.ID, project.ID, typ.ID)
+		if err != nil {
+			return handlePqErr(err)
+		}
+	}
+
+	return nil
+
 }
 
 // Save updates an existing field in the database.
-func (f *FieldStore) Save(field *models.Field) error {
+func (f *FieldStore) Save(field models.Field) error {
 	_, err := f.db.Exec(`UPDATE fields SET 
 					     (name, data_type) = ($1, $2) WHERE id = $3;`,
 		field.Name, field.DataType, field.ID)
@@ -110,8 +114,7 @@ func (f *FieldStore) Save(field *models.Field) error {
 // New creates a new Field in the database.
 func (f *FieldStore) New(field *models.Field) error {
 	err := f.db.QueryRow(`INSERT INTO fields 
-						  (name, data_type) 
-						  VALUES ($1, $2)
+						  (name, data_type) VALUES ($1, $2)
 						  RETURNING id;`,
 		field.Name, field.DataType).
 		Scan(&field.ID)
