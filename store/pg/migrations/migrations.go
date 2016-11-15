@@ -1,6 +1,9 @@
 package migrations
 
-import "database/sql"
+import (
+	"database/sql"
+	"log"
+)
 
 type schema struct {
 	v int
@@ -29,13 +32,13 @@ func SchemaVersion(db *sql.DB) int {
 // returned from the database_information table.
 func RunMigrations(db *sql.DB) error {
 	version := SchemaVersion(db)
-	"log.Printf"("Current database version %d\n", version)
+	log.Printf("Current database version %d\n", version)
 
 	for _, schema := range schemas {
 		version = SchemaVersion(db)
 
 		if version < schema.v {
-			"log.Printf"("Migrating database to version %d\n", schema.v)
+			log.Printf("Migrating database to version %d\n", schema.v)
 			_, err := db.Exec(schema.q)
 			if err != nil {
 				return err
