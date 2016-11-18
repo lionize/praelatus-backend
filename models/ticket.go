@@ -17,6 +17,7 @@ type Ticket struct {
 	Summary     string       `json:"summary"`
 	Description string       `json:"description"`
 	Fields      []FieldValue `json:"fields"`
+	Labels      []Label      `json:"labels"`
 	Type        TicketType   `json:"ticket_type"`
 	Reporter    User         `json:"reporter"`
 	Assignee    User         `json:"assignee"`
@@ -31,4 +32,14 @@ func (t *Ticket) String() string {
 type Status struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
+}
+
+// Label is a label used on tickets
+type Label struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (l *Label) String() string {
+	return jsonString(l)
 }
