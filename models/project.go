@@ -7,9 +7,9 @@ type PermissionLevel string
 
 // Permission Levels
 const (
-	AdminR = "ADMIN"
-	CoreR  = "CORE"
-	UserR  = "USER"
+	AdminR PermissionLevel = "ADMIN"
+	CoreR                  = "CORE"
+	UserR                  = "USER"
 )
 
 // Project is the model used to represent a project in the database.
@@ -29,7 +29,7 @@ func (p *Project) String() string {
 	return jsonString(p)
 }
 
-// Permission is used to control user access to teams and projects.
+// Permission is used to control user / team access to projects.
 type Permission struct {
 	ID          int64           `json:"id"`
 	CreatedDate time.Time       `json:"created_date"`
