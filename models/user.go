@@ -12,14 +12,15 @@ import (
 
 // User represents a user of our application
 type User struct {
-	ID         int64  `json:"id"`
-	Username   string `json:"username"`
-	Password   string `json:"password,omitempty"`
-	Email      string `json:"email"`
-	FullName   string `json:"full_name"`
-	Gravatar   string `json:"gravatar"`
-	ProfilePic string `json:"profile_picture"`
-	IsAdmin    bool   `json:"is_admin,omitempty"`
+	ID         int64    `json:"id"`
+	Username   string   `json:"username"`
+	Password   string   `json:"password,omitempty"`
+	Email      string   `json:"email"`
+	FullName   string   `json:"full_name"`
+	Gravatar   string   `json:"gravatar"`
+	ProfilePic string   `json:"profile_picture"`
+	IsAdmin    bool     `json:"is_admin,omitempty"`
+	Settings   Settings `json:"settings"`
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
@@ -57,4 +58,10 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 		Gravatar:   "https://www.gravatar.com/avatar/" + eh,
 		IsAdmin:    admin,
 	}, nil
+}
+
+// Settings represents an individual users preferences
+type Settings struct {
+	DefaultProject string
+	DefaultView    string
 }
