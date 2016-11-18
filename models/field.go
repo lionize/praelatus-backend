@@ -12,13 +12,15 @@ var DataTypes = []string{
 	"STRING",
 	"INT",
 	"DATE",
+	"OPT",
 }
 
 // Field is a ticket field
 type Field struct {
-	ID       int64  `json:"id"`
-	Name     string `json:"name"`
-	DataType string `json:"data_type"`
+	ID       int64    `json:"id"`
+	Name     string   `json:"name"`
+	DataType string   `json:"data_type"`
+	Options  []string `json:"options,omitempty"`
 }
 
 func (f *Field) String() string {
@@ -27,32 +29,25 @@ func (f *Field) String() string {
 
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
-	*Field
+	ID       int64    `json:"id"`
+	Name     string   `json:"name"`
+	DataType string   `json:"data_type"`
+	Options  []string `json:"options,omitempty"`
 
-	// Value holds the raw JSONB from the db
+	// Value holds the value of the given field
 	Value interface{} `json:"value"`
+
+	*Field
 }
 
-func (f *FieldValue) String() string {
-	return jsonString(f)
-}
-
-func isValidDataType(dt string) bool {
+// IsValidDataType is used to verify that the field has a data type we can
+// support
+func (f *Field) IsValidDataType() bool {
 	for _, t := range DataTypes {
-		if t == dt {
+		if t == f.DataType {
 			return true
 		}
 	}
 
 	return false
-}
-
-// NewField will verify a valid data type is given and return a field with that
-// data type or an error if an invalid data type was supplied.
-func NewField(name, dt string) (Field, error) {
-	if !isValidDataType(dt) {
-		return Field{}, ErrInvalidDataType
-	}
-
-	return Field{Name: name, DataType: dt}, nil
 }
