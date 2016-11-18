@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"github.com/praelatus/backend/models"
@@ -65,7 +66,21 @@ func SeedTickets(s Store) error {
 			Description: "No really, this is just a test",
 			Reporter:    models.User{ID: 1},
 			Assignee:    models.User{ID: 1},
-			Type:        models.TicketType{ID: 1},
+			Labels: []models.Label{
+				models.Label{1, "test"},
+			},
+			Fields: []models.FieldValue{
+				models.FieldValue{
+					Name:  "Story Points",
+					Value: rand.Int(),
+				},
+				models.FieldValue{
+					Name:    "Priority",
+					Options: []string{"HIGH", "MEDIUM", "LOW"},
+					Value:   []string{"HIGH", "MEDIUM", "LOW"}[rand.Intn(3)],
+				},
+			},
+			Type: models.TicketType{ID: 1},
 		}
 
 		e := s.Tickets().New(models.Project{ID: 1}, t)
@@ -140,8 +155,8 @@ func SeedComments(s Store) error {
 func SeedFields(s Store) error {
 	fields := []models.Field{
 		models.Field{
-			Name:     "TestField1",
-			DataType: "STRING",
+			Name:     "Story Points",
+			DataType: "INT",
 		},
 		models.Field{
 			Name:     "TestField2",
@@ -154,6 +169,11 @@ func SeedFields(s Store) error {
 		models.Field{
 			Name:     "TestField4",
 			DataType: "DATE",
+		},
+		models.Field{
+			Name:     "Priority",
+			DataType: "OPT",
+			Options:  []string{"HIGH", "MEDIUM", "LOW"},
 		},
 	}
 
