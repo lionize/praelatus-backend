@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
@@ -8,6 +9,7 @@ import (
 	"github.com/praelatus/backend/store/pg"
 )
 
+// Routes holds all of the routes for the different API endpoints.
 type Routes struct {
 	Root     *mux.Router
 	Users    *mux.Router
@@ -15,11 +17,16 @@ type Routes struct {
 	Tickets  *mux.Router
 }
 
+// Used in starting the router.
 var BaseRoutes *Routes
+
+// Store is the global store used in our HTTP handlers.
 var Store store.Store
+
+// Cache is the global cache object used in our HTTP handlers.
 var Cache *store.Cache
 
-func BuildRoutes() {
+func Run(port string) {
 	Store = pg.New(os.Getenv("PRAELATUS_DB"))
 
 	BaseRoutes = &Routes{}
@@ -31,4 +38,6 @@ func BuildRoutes() {
 	InitUserRoutes()
 	InitProjectRoutes()
 	InitTicketRoutes()
+
+	http.ListenAndServe(port, BaseRoutes.Root)
 }

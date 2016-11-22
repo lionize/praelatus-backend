@@ -17,7 +17,7 @@ func InitUserRoutes() {
 }
 
 func ListUsers(c *mw.Context) (int, []byte) {
-	users, err := as.Store.Users().GetAll()
+	users, err := Store.Users().GetAll()
 	// TODO: better error handling
 	if err != nil {
 		return http.StatusInternalServerError, []byte(err.Error())
@@ -58,14 +58,14 @@ func LoginUser(c *mw.Context) (int, []byte) {
 }
 
 func GetUser(c *mw.Context) (int, []byte) {
-	var u models.User
+	var u *models.User
 	var err error
 
 	username := c.Var("username")
 
 	// If we get an integer search based on ID instead of username
 	if id, err := strconv.Atoi(username); err == nil {
-		u, err = Store.Users().Get(id)
+		u, err = Store.Users().Get(int64(id))
 	} else {
 		u, err = Store.Users().GetByUsername(username)
 	}

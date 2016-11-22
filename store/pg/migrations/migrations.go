@@ -1,33 +1,56 @@
 package migrations
 
-import "github.com/praelatus/backend/store"
-
-const (
-	v1 = iota
+import (
+	"database/sql"
+	"log"
 )
 
-func checkMigration(e error) {
-	if e != nil {
-		panic(e)
-	}
+type schema struct {
+	v int
+	q string
 }
 
-// RunMigration will run all database migrations depending on the version
+var schemas = []schema{
+	v1schema,
+}
+
+// SchemaVersion will find the schema version for the given database
+func SchemaVersion(db *sql.DB) int {
+	var v int
+
+	rw := db.QueryRow("SELECT schema_version FROM database_information")
+	err := rw.Scan(&v)
+	if err != nil {
+		return 0
+	}
+
+	return v
+
+}
+
+// RunMigrations will run all database migrations depending on the version
 // returned from the database_information table.
-func RunMigration(s store.SqlStore) error {
-	version := 0
+func RunMigrations(db *sql.DB) error {
+	version := SchemaVersion(db)
+	log.Printf("Current database version %d\n", version)
 
-	rws, err := s.RunQuery("SELECT schema_version FROM database_information;")
-	if err == nil {
-		rws.Scan(&version)
+	for _, schema := range schemas {
+		version = SchemaVersion(db)
+
+		if version < schema.v {
+			log.Printf("Migrating database to version %d\n", schema.v)
+			_, err := db.Exec(schema.q)
+			if err != nil {
+				return err
+			}
+
+			_, err = db.Exec(`INSERT INTO database_information (schema_version) 
+							  VALUES ($1);`, schema.v)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	if version < v1 {
-		_, err = s.RunQuery(v1Schema)
-		checkMigration(err)
-		_, err = s.RunQuery("INSERT INTO database_information VALUES (" + string(v1) + ")")
-		checkMigration(err)
-	}
-
-	return err
+	return nil
 }

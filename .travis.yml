@@ -1,0 +1,22 @@
+language: go
+
+go:
+    - 1.7
+    - master
+
+services:
+    - postgres
+    - redis-server
+
+env:
+    - PRAELATUS_DB="postgres://postgres@localhost:5432/prae_ci_test?sslmode=disable"
+
+install:
+    - go get github.com/Masterminds/glide
+    - $GOPATH/bin/glide i
+
+before_script:
+    - psql -c 'create database prae_ci_test;' -U postgres
+
+script:
+    - go test $($GOPATH/bin/glide novendor)
