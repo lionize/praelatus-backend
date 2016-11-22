@@ -1,51 +1,53 @@
 package models
 
-import (
-	"encoding/json"
-	"errors"
-)
+import "errors"
 
+// ErrInvalidDataType indicates that the field was created with an incorrect
+// data type
 var ErrInvalidDataType = errors.New("Invalid data type for field")
 
+// DataTypes holds the available data types
 var DataTypes = []string{
 	"FLOAT",
 	"STRING",
 	"INT",
 	"DATE",
+	"OPT",
 }
 
 // Field is a ticket field
 type Field struct {
-	ID       int64  `json:"id" db:"id"`
-	Name     string `json:"name" db:"name"`
-	DataType string `json:"data_type" db:"data_type"`
+	ID       int64    `json:"id"`
+	Name     string   `json:"name"`
+	DataType string   `json:"data_type"`
+	Options  []string `json:"options,omitempty"`
+}
+
+func (f *Field) String() string {
+	return jsonString(f)
 }
 
 // FieldValue holds the value for a field on a given ticket.
 type FieldValue struct {
-	FieldID  int64 `json:"-" db:"field_id"`
-	TicketID int64 `json:"-" db:"ticket_id"`
+	ID       int64    `json:"id"`
+	Name     string   `json:"name"`
+	DataType string   `json:"data_type"`
+	Options  []string `json:"options,omitempty"`
 
-	// Value holds the raw JSONB from the db
-	Value json.RawMessage `db:"value"`
+	// Value holds the value of the given field
+	Value interface{} `json:"value"`
+
+	*Field
 }
 
-func isValidDataType(dt string) bool {
+// IsValidDataType is used to verify that the field has a data type we can
+// support
+func (f *Field) IsValidDataType() bool {
 	for _, t := range DataTypes {
-		if t == dt {
+		if t == f.DataType {
 			return true
 		}
 	}
 
 	return false
-}
-
-// NewField will verify a valid data type is given and return a field with that
-// data type or an error if an invalid data type was supplied.
-func NewField(name, dt string) (Field, error) {
-	if !isValidDataType(dt) {
-		return Field{}, ErrInvalidDataType
-	}
-
-	return Field{Name: name, DataType: dt}, nil
 }

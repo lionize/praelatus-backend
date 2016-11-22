@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	log "github.com/iamthemuffinman/logsip"
+	"log"
 )
 
 // ContextHandler is a custom function type which handles a http request, it takes
@@ -45,14 +45,14 @@ func (s *Stack) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(statusCode)
 	_, err := w.Write(response)
 	if err != nil {
-		log.Error(err)
+		"log.Println"(err)
 	}
 
 	if statusCode >= 300 {
-		log.Errorf("|%s| [%d] %s %s",
+		"log.Printf"("|%s| [%d] %s %s",
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
 	} else {
-		log.Infof("|%s| [%d] %s %s",
+		"log.Printf"("|%s| [%d] %s %s",
 			r.Method, statusCode, r.URL.Path, time.Since(start).String())
 	}
 

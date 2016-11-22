@@ -3,23 +3,24 @@ package models
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"fmt"
 	"strings"
 
-	log "github.com/iamthemuffinman/logsip"
+	"log"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
 // User represents a user of our application
 type User struct {
-	ID         int64  `json:"id" db:"id"`
-	Username   string `json:"username" db:"username"`
-	Password   string `json:"password,omitempty" db:"password"`
-	Email      string `json:"email" db:"email"`
-	FullName   string `json:"full_name" db:"full_name"`
-	Gravatar   string `json:"gravatar" db:"gravatar"`
-	ProfilePic string `json:"profile_picture" db:"profile_picture"`
-	IsAdmin    bool   `json:"is_admin,omitempty" db:"is_admin"`
+	ID         int64    `json:"id"`
+	Username   string   `json:"username"`
+	Password   string   `json:"password,omitempty"`
+	Email      string   `json:"email"`
+	FullName   string   `json:"full_name"`
+	Gravatar   string   `json:"gravatar"`
+	ProfilePic string   `json:"profile_picture"`
+	IsAdmin    bool     `json:"is_admin,omitempty"`
+	Settings   Settings `json:"settings"`
 }
 
 // CheckPw will verify if the given password matches for this user. Logs any
@@ -30,12 +31,12 @@ func (u *User) CheckPw(pw []byte) bool {
 		return true
 	}
 
-	log.Error(err)
+	log.Println(err)
 	return false
 }
 
 func (u *User) String() string {
-	return fmt.Sprintf("<User %d, %s>", u.ID, u.Username)
+	return jsonString(u)
 }
 
 // NewUser will create the user after encrypting the password with bcrypt
@@ -57,4 +58,10 @@ func NewUser(username, password, fullName, email string, admin bool) (*User, err
 		Gravatar:   "https://www.gravatar.com/avatar/" + eh,
 		IsAdmin:    admin,
 	}, nil
+}
+
+// Settings represents an individual users preferences
+type Settings struct {
+	DefaultProject string
+	DefaultView    string
 }

@@ -2,27 +2,30 @@ package pg
 
 import (
 	"database/sql"
+	"log"
 
-	log "github.com/iamthemuffinman/logsip"
-	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/praelatus/backend/store"
 	"github.com/praelatus/backend/store/pg/migrations"
 )
 
+type rowScanner interface {
+	Scan(dest ...interface{}) error
+}
+
 // Store implements the store.Store and store.SQLStore interface for a postgres DB.
 type Store struct {
-	db          *sqlx.DB
-	replicas    []sqlx.DB
-	users       *UserStore
-	projects    *ProjectStore
-	fields      *FieldStore
-	workflows   *WorkflowStore
-	tickets     *TicketStore
-	labels      *LabelStore
-	transitions *TransitionStore
-	statuses    *StatusStore
-	teams       *TeamStore
+	db        *sql.DB
+	replicas  []sql.DB
+	users     *UserStore
+	projects  *ProjectStore
+	fields    *FieldStore
+	workflows *WorkflowStore
+	tickets   *TicketStore
+	types     *TypeStore
+	labels    *LabelStore
+	statuses  *StatusStore
+	teams     *TeamStore
 }
 
 // New connects to the postgres database provided and returns a store
@@ -30,28 +33,28 @@ type Store struct {
 func New(conn string, replicas ...string) store.Store {
 	// TODO: replica support
 
-	d, err := sqlx.Open("postgres", conn)
+	d, err := sql.Open("postgres", conn)
 	if err != nil {
-		log.Panicln(err)
+		log.Panicln("Error connection:", err)
 	}
 
 	s := &Store{
-		db:          d,
-		replicas:    []sqlx.DB{},
-		users:       &UserStore{d},
-		projects:    &ProjectStore{d},
-		fields:      &FieldStore{d},
-		tickets:     &TicketStore{d},
-		labels:      &LabelStore{d},
-		workflows:   &WorkflowStore{d},
-		transitions: &TransitionStore{d},
-		statuses:    &StatusStore{d},
-		teams:       &TeamStore{d},
+		db:        d,
+		replicas:  []sql.DB{},
+		users:     &UserStore{d},
+		projects:  &ProjectStore{d},
+		fields:    &FieldStore{d},
+		tickets:   &TicketStore{d},
+		labels:    &LabelStore{d},
+		workflows: &WorkflowStore{d},
+		types:     &TypeStore{d},
+		statuses:  &StatusStore{d},
+		teams:     &TeamStore{d},
 	}
 
 	err = migrations.RunMigrations(s.db)
 	if err != nil {
-		log.Panicln(err)
+		log.Panicln("Error migrating:", err)
 	}
 
 	return s
@@ -77,6 +80,11 @@ func (pg *Store) Tickets() store.TicketStore {
 	return pg.tickets
 }
 
+// Types returns the underlying TypeStore for a postgres DB
+func (pg *Store) Types() store.TypeStore {
+	return pg.types
+}
+
 // Projects returns the underlying ProjectStore for a postgres DB
 func (pg *Store) Projects() store.ProjectStore {
 	return pg.projects
@@ -97,14 +105,9 @@ func (pg *Store) Labels() store.LabelStore {
 	return pg.labels
 }
 
-// Transitions returns the underlying TransitionStore for a postgres DB
-func (pg *Store) Transitions() store.TransitionStore {
-	return pg.transitions
-}
-
 // Connection implementes store.SQLStore for postgres db
-func (pg *Store) Connection() *sql.DB {
-	return pg.db.DB
+func (pg *Store) Conn() *sql.DB {
+	return pg.db
 }
 
 // toPqErr converts an error to a pq.Error so we can access more info about what
@@ -123,7 +126,7 @@ func handlePqErr(e error) error {
 		return e
 	}
 
-	log.Error(e)
+	log.Printf("postgres error [%d] %s\n", pqe.Code, pqe.Message)
 
 	// fmt.Println("PQ ERROR CODE:", pqe.Code)
 	if pqe.Code == "23505" {

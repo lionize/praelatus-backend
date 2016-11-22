@@ -7,32 +7,33 @@ type PermissionLevel string
 
 // Permission Levels
 const (
-	AdminR = "ADMIN"
-	CoreR  = "CORE"
-	UserR  = "USER"
+	AdminR PermissionLevel = "ADMIN"
+	CoreR                  = "CORE"
+	UserR                  = "USER"
 )
 
 // Project is the model used to represent a project in the database.
 type Project struct {
-	ID          int64     `json:"id" db:"id"`
-	CreatedDate time.Time `json:"created_date" db:"created_date"`
-	Name        string    `json:"name" db:"name"`
-	Key         string    `json:"key" db:"key"`
-	Homepage    string    `json:"homepage" db:"homepage"`
-	IconURL     string    `json:"icon_url" db:"icon_url"`
-	Repo        string    `json:"repo,omitempty" db:"repo"`
-
-	LeadID int64 `json:"-" db:"lead_id"`
-	TeamID int64 `json:"-" db:"team_id"`
+	ID          int64     `json:"id"`
+	CreatedDate time.Time `json:"created_date"`
+	Name        string    `json:"name"`
+	Key         string    `json:"key"`
+	Homepage    string    `json:"homepage"`
+	IconURL     string    `json:"icon_url"`
+	Repo        string    `json:"repo,omitempty"`
+	Lead        User      `json:"lead"`
+	Team        User      `json:"team"`
 }
 
-// Permission is used to control user access to teams and projects.
-type Permission struct {
-	ID          int64           `json:"id" db:"id"`
-	CreatedDate time.Time       `json:"created_date" db:"created_date"`
-	UpdatedDate time.Time       `json:"updated_date" db:"update_date"`
-	Level       PermissionLevel `json:"level" db:"level"`
+func (p *Project) String() string {
+	return jsonString(p)
+}
 
-	ProjectID int64 `json:"-" db:"project_id"`
-	UserID    int64 `json:"-" db:"user_id"`
+// Permission is used to control user / team access to projects.
+type Permission struct {
+	ID          int64           `json:"id"`
+	CreatedDate time.Time       `json:"created_date"`
+	UpdatedDate time.Time       `json:"updated_date"`
+	Level       PermissionLevel `json:"level"`
+	User        User            `json:"user"`
 }
