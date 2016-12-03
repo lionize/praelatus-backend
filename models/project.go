@@ -22,7 +22,7 @@ type Project struct {
 	IconURL     string    `json:"icon_url"`
 	Repo        string    `json:"repo,omitempty"`
 	Lead        User      `json:"lead"`
-	Team        User      `json:"team"`
+	Team        Team      `json:"team"`
 }
 
 func (p *Project) String() string {
